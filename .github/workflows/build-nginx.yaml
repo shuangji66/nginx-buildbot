@@ -1,0 +1,188 @@
+name: Build Nginx Binary
+
+on:
+  # 1. 定时检查上游新 Release (例如每小时检查一次)
+  schedule:
+    - cron: '0 * * * *' 
+  # 2. 手动触发
+  workflow_dispatch:
+
+jobs:
+  find-releases:
+    runs-on: ubuntu-latest
+    outputs:
+      # 输出一个 JSON 字符串，包含所有需要构建的版本
+      versions_json: ${{ steps.set-matrix.outputs.versions_json }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Find Nginx releases to build
+        id: set-matrix
+        run: |
+          # 安装依赖
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+
+          # 获取上游仓库的所有 releases
+          echo "Fetching releases from nginx/nginx..."
+          releases=$(curl -s https://api.github.com/repos/nginx/nginx/releases)
+
+          # 初始化变量用于存储最新版本
+          latest_128=""
+          latest_129=""
+          
+          # 遍历 releases 并查找匹配的版本
+          for row in $(echo "${releases}" | jq -r '.[] | @base64'); do
+            _jq() { echo ${row} | base64 --decode | jq -r ${1}; }
+            
+            tag_name=$(_jq '.tag_name')
+            # 格式如 release-1.28.3
+            if [[ $tag_name =~ ^release-(1\.28\.[0-9]+|1\.29\.[0-9]+)$ ]]; then
+              full_version="${tag_name#release-}"
+              
+              if [[ $full_version =~ ^1\.28\.[0-9]+$ ]] && ( [[ -z "$latest_128" ]] || [[ "$full_version" > "$latest_128" ]] ); then
+                latest_128="$full_version"
+              elif [[ $full_version =~ ^1\.29\.[0-9]+$ ]] && ( [[ -z "$latest_129" ]] || [[ "$full_version" > "$latest_129" ]] ); then
+                latest_129="$full_version"
+              fi
+            fi
+          done
+
+          # 根据触发方式确定最终要构建的版本列表
+          declare -a versions_to_build=()
+          
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            # 自动调度模式：只检查是否有任何一个新版本是全新的
+            all_repo_releases=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases")
+            
+            if [[ -n "$latest_128" ]]; then
+              if ! echo "$all_repo_releases" | jq -e ".[] | select(.tag_name == \"nginx-$latest_128\")" > /dev/null; then
+                versions_to_build+=("$latest_128")
+              fi
+            fi
+            if [[ -n "$latest_129" ]]; then
+              if ! echo "$all_repo_releases" | jq -e ".[] | select(.tag_name == \"nginx-$latest_129\")" > /dev/null; then
+                versions_to_build+=("$latest_129")
+              fi
+            fi
+          else
+            # 手动触发模式：构建找到的所有最新版本
+            [[ -n "$latest_128" ]] && versions_to_build+=("$latest_128")
+            [[ -n "$latest_129" ]] && versions_to_build+=("$latest_129")
+          fi
+
+          # 将数组转换为 JSON 格式并输出
+          versions_json=$(printf '%s\n' "${versions_to_build[@]}" | jq -R . | jq -s .)
+          echo "versions_to_build: $versions_json"
+          echo "versions_json=$versions_json" >> $GITHUB_OUTPUT
+
+  build-binary:
+    needs: find-releases
+    # 只有在找到需要构建的版本时才运行
+    if: ${{ fromJson(needs.find-releases.outputs.versions_json) != null && length(fromJson(needs.find-releases.outputs.versions_json)) > 0 }}
+    strategy:
+      fail-fast: false # 如果某个版本构建失败，其他版本继续构建
+      matrix:
+        version: ${{ fromJson(needs.find-releases.outputs.versions_json) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc \
+            make \
+            libpcre3-dev \
+            zlib1g-dev \
+            libssl-dev \
+            libgd-dev \
+            libgeoip-dev \
+            libxml2-dev \
+            libxslt1-dev \
+            libperl-dev \
+            libbz2-dev \
+            libexpat1-dev \
+            libncurses5-dev \
+            libreadline-dev \
+            libtinfo-dev \
+            wget \
+            curl \
+            jq
+
+      - name: Download Source Code for ${{ matrix.version }}
+        run: |
+          NGINX_VERSION="${{ matrix.version }}"
+          DOWNLOAD_URL="https://github.com/nginx/nginx/archive/release-${NGINX_VERSION}.tar.gz"
+          echo "Downloading nginx source code version $NGINX_VERSION from $DOWNLOAD_URL..."
+          wget -O "nginx-${NGINX_VERSION}.tar.gz" "$DOWNLOAD_URL"
+
+      - name: Extract Source Code for ${{ matrix.version }}
+        run: |
+          NGINX_VERSION="${{ matrix.version }}"
+          echo "Extracting nginx-${NGINX_VERSION}.tar.gz..."
+          tar -xzf "nginx-${NGINX_VERSION}.tar.gz"
+          ls -la
+
+      - name: Configure and Build for ${{ matrix.version }}
+        working-directory: ./nginx-release-${{ matrix.version }}
+        run: |
+          NGINX_VERSION="${{ matrix.version }}"
+          echo "Configuring nginx $NGINX_VERSION..."
+          ./configure \
+            --prefix=/var/apps/Nginx/var \
+            --sbin-path=/var/apps/Nginx/target/Nginx \
+            --modules-path=/var/apps/Nginx/shares/etc/modules \
+            --conf-path=/var/apps/Nginx/shares/etc/nginx.conf \
+            --pid-path=/var/apps/Nginx/var/nginx.pid \
+            --lock-path=/var/apps/Nginx/var/nginx.lock \
+            --http-client-body-temp-path=/var/apps/Nginx/var/cache/client_temp \
+            --http-proxy-temp-path=/var/apps/Nginx/var/cache/proxy_temp \
+            --http-fastcgi-temp-path=/var/apps/Nginx/var/cache/fastcgi_temp \
+            --http-uwsgi-temp-path=/var/apps/Nginx/var/cache/uwsgi_temp \
+            --http-scgi-temp-path=/var/apps/Nginx/var/cache/scgi_temp \
+            --with-http_ssl_module \
+            --with-http_v2_module \
+            --with-http_v3_module \
+            --with-http_realip_module \
+            --with-http_image_filter_module \
+            --with-http_sub_module \
+            --with-http_dav_module \
+            --with-http_mp4_module \
+            --with-http_gunzip_module \
+            --with-http_gzip_static_module \
+            --with-http_auth_request_module \
+            --with-http_random_index_module \
+            --with-http_secure_link_module \
+            --with-http_slice_module \
+            --with-http_stub_status_module \
+            --with-threads \
+            --with-file-aio \
+            --with-pcre-jit \
+            --with-stream \
+            --with-stream_ssl_module \
+            --with-mail \
+            --with-mail_ssl_module
+          
+          echo "Building nginx $NGINX_VERSION..."
+          make -j$(nproc)
+
+      - name: Extract Binary for ${{ matrix.version }}
+        run: |
+          NGINX_VERSION="${{ matrix.version }}"
+          echo "Copying built binary for $NGINX_VERSION to workspace root..."
+          cp "nginx-release-${{ matrix.version }}/objs/nginx" "nginx-${NGINX_VERSION}"
+          ls -la "nginx-${NGINX_VERSION}"
+
+      - name: Create Release and Upload Binary for ${{ matrix.version }}
+        uses: softprops/action-gh-release@v2
+        with:
+          name: nginx-${{ matrix.version }}
+          tag_name: nginx-${{ matrix.version }}
+          files: nginx-${{ matrix.version }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
