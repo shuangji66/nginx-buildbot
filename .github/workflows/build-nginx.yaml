@@ -149,8 +149,6 @@ jobs:
         working-directory: ./nginx-src
         run: |
           NGINX_VERSION="${{ matrix.version }}"
-          cd nginx-src
-          echo "Now in: $(pwd)"
           echo "Configuring nginx $NGINX_VERSION..."
           ./auto/configure \
             --prefix=/var/apps/Nginx/var \
