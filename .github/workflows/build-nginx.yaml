@@ -144,11 +144,6 @@ jobs:
           tar -xzf "$ARCHIVE_NAME" -C nginx-src --strip-components=1
           echo "Contents of nginx-src:"
           ls -la nginx-src/
-          # 确认 configure 文件存在
-          if [ ! -f "nginx-src/configure" ]; then
-            echo "ERROR: configure script not found in nginx-src/"
-            exit 1
-          fi
 
       - name: Configure and Build for ${{ matrix.version }}
         working-directory: ./nginx-src
