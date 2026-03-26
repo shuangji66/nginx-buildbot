@@ -140,14 +140,22 @@ jobs:
           NGINX_VERSION="${{ matrix.version }}"
           ARCHIVE_NAME="nginx-${NGINX_VERSION}.tar.gz"
           echo "Extracting $ARCHIVE_NAME and flattening directory structure..."
-          # 解压并移除顶层目录，将内容放入名为 nginx-src 的目录中
-          mkdir nginx-src && tar -xzf "$ARCHIVE_NAME" -C nginx-src --strip-components=1
+          mkdir nginx-src
+          tar -xzf "$ARCHIVE_NAME" -C nginx-src --strip-components=1
+          echo "Contents of nginx-src:"
           ls -la nginx-src/
+          # 确认 configure 文件存在
+          if [ ! -f "nginx-src/configure" ]; then
+            echo "ERROR: configure script not found in nginx-src/"
+            exit 1
+          fi
 
       - name: Configure and Build for ${{ matrix.version }}
         working-directory: ./nginx-src
         run: |
           NGINX_VERSION="${{ matrix.version }}"
+          cd nginx-src
+          echo "Now in: $(pwd)"
           echo "Configuring nginx $NGINX_VERSION..."
           ./configure \
             --prefix=/var/apps/Nginx/var \
@@ -191,7 +199,7 @@ jobs:
         run: |
           NGINX_VERSION="${{ matrix.version }}"
           echo "Copying built binary for $NGINX_VERSION to workspace root..."
-          cp "nginx-release-${{ matrix.version }}/objs/nginx" "nginx-${NGINX_VERSION}"
+          cp nginx-src/objs/nginx "nginx-${NGINX_VERSION}"
           ls -la "nginx-${NGINX_VERSION}"
 
       - name: Create Release and Upload Binary for ${{ matrix.version }}
