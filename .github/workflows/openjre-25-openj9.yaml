@@ -1,31 +1,32 @@
-name: Extract Java from Docker Image
+name: Extract OpenJDK
 
 on:
-  workflow_dispatch: # 允许手动触发工作流
+  workflow_dispatch:
 
 jobs:
-  extract-java:
+  extract:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm]
+        image: [ibm-semeru-runtimes:open-25-jre-noble, ibm-semeru-runtimes:open-21-jre-noble,ibm-semeru-runtimes:open-17-jre-noble,ibm-semeru-runtimes:open-11-jre-noble,ibm-semeru-runtimes:open-8-jre-noble]
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract Java files from Docker image
+      - name: Extract Files
         run: |
-          # 拉取指定的 Docker 镜像
-          docker pull wushuo894/openj9:latest
+          # 拉取镜像
+          docker pull ${{ matrix.image }}
           
-          # 运行一个临时容器，将镜像内的 /opt/java/ 目录挂载到当前工作目录
-          # --rm 参数表示容器退出后自动删除
-          docker run --rm -v ${{ github.workspace }}:/output wushuo894/openj9:latest cp -r /opt/java/. /output/
+          # 直接提取 /opt/java/openjdk 到当前目录
+          # 这样提取出来的文件夹名就是 openjdk
+          docker run --rm -v ${{ github.workspace }}:/host ${{ matrix.image }} cp -r /opt/java/openjdk /host/
 
-      - name: Upload Java files as artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: java-files-${{ matrix.os }}
-          path: ${{ github.workspace }}/openjdk
+          name: openjdk-${{ matrix.image }}-${{ matrix.os }}
+          path: openjdk
           retention-days: 5
