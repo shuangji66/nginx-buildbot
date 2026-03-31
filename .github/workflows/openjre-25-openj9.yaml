@@ -9,7 +9,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm]
-        image: [ibm-semeru-runtimes:open-25-jre-noble, ibm-semeru-runtimes:open-21-jre-noble,ibm-semeru-runtimes:open-17-jre-noble,ibm-semeru-runtimes:open-11-jre-noble,ibm-semeru-runtimes:open-8-jre-noble]
+        # 只保留版本标签，公共前缀在下面定义
+        tag: [open-25-jre-noble, open-21-jre-noble, open-17-jre-noble, open-11-jre-noble, open-8-jre-noble]
 
     steps:
       - name: Checkout
@@ -17,16 +18,17 @@ jobs:
 
       - name: Extract Files
         run: |
-          # 拉取镜像
-          docker pull ${{ matrix.image }}
+          # 定义公共镜像仓库前缀
+          REGISTRY="ibm-semeru-runtimes"
+          IMAGE="${REGISTRY}:${{ matrix.tag }}"
           
-          # 直接提取 /opt/java/openjdk 到当前目录
-          # 这样提取出来的文件夹名就是 openjdk
-          docker run --rm -v ${{ github.workspace }}:/host ${{ matrix.image }} cp -r /opt/java/openjdk /host/
+          docker pull $IMAGE
+          docker run --rm -v ${{ github.workspace }}:/host $IMAGE cp -r /opt/java/openjdk /host/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: openjdk-${{ matrix.image }}-${{ matrix.os }}
+          # 使用 tag 变量来命名，保持清晰
+          name: openjdk-${{ matrix.tag }}-${{ matrix.os }}
           path: openjdk
           retention-days: 5
