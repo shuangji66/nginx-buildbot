@@ -1,8 +1,6 @@
 name: Build Nginx Binary
 
 on:
-  schedule:
-    - cron: '0 10 * * 5'   # 每周五 10:00 UTC 自动构建
   workflow_dispatch:
 
 jobs:
