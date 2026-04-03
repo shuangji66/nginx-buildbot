@@ -1,5 +1,4 @@
 name: Build Uptime Kuma
-
 on:
   workflow_dispatch:
 
@@ -22,7 +21,6 @@ jobs:
             exit 1
           fi
           if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
-            echo "警告：未获取到版本号，使用默认值 unknown"
             VERSION="unknown"
           fi
           echo "tarball_url=$TARBALL_URL" >> $GITHUB_OUTPUT
@@ -30,30 +28,49 @@ jobs:
           echo "下载地址: $TARBALL_URL"
           echo "版本号: $VERSION"
 
-      - name: 下载并解压源码包
+      - name: 创建目标目录（使用 sudo）
+        run: |
+          sudo mkdir -p /var/apps/uptime-kuma/target
+          sudo chown -R $USER:$USER /var/apps/uptime-kuma
+
+      - name: 下载并解压源码包到 /var/apps/uptime-kuma/target/server
         run: |
           curl -L "${{ steps.get_release.outputs.tarball_url }}" -o source.tar.gz
-          mkdir uptime-kuma
-          tar -xzf source.tar.gz --strip-components=1 -C uptime-kuma
+          mkdir -p /var/apps/uptime-kuma/target/server
+          tar -xzf source.tar.gz --strip-components=1 -C /var/apps/uptime-kuma/target/server
           rm source.tar.gz
-          ls -la uptime-kuma
+          ls -la /var/apps/uptime-kuma/target/server
 
       - name: 安装 Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: uptime-kuma/package-lock.json
+          cache-dependency-path: /var/apps/uptime-kuma/target/server/package-lock.json
 
-      - name: 执行构建 (npm ci --omit dev --no-audit && npm run download-dist)
+      - name: 执行构建（生产依赖 + download-dist）
         run: |
-          cd uptime-kuma
+          cd /var/apps/uptime-kuma/target/server
           npm ci --omit dev --no-audit
           npm run download-dist
 
-      - name: 上传整个 uptime-kuma 目录
+      - name: 上传指定的构建产物
         uses: actions/upload-artifact@v4
         with:
           name: uptime-kuma-${{ steps.get_release.outputs.version }}-${{ matrix.os }}
-          path: uptime-kuma/
+          path: |
+            config
+            db
+            dist
+            extra
+            node_modules
+            public
+            server
+            src
+            ecosystem.config.js
+            package-lock.json
+            package.json
+            tsconfig-backend.json
+            tsconfig.json
+          working-directory: /var/apps/uptime-kuma/target/server
           if-no-files-found: error
