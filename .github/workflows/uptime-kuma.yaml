@@ -1,4 +1,4 @@
-name: Build Uptime Kuma from Release
+name: Build Uptime Kuma and Release
 
 on:
   workflow_dispatch:
