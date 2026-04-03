@@ -15,7 +15,6 @@ jobs:
         with:
           repository: louislam/uptime-kuma
           path: uptime-kuma
-          ref: ${{ github.event.inputs.branch || 'master' }}
 
       - name: 安装 Node.js 24
         uses: actions/setup-node@v4
