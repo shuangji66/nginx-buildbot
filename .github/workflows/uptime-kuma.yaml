@@ -21,6 +21,7 @@ jobs:
             exit 1
           fi
           if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "警告：未获取到版本号，使用默认值 unknown"
             VERSION="unknown"
           fi
           echo "tarball_url=$TARBALL_URL" >> $GITHUB_OUTPUT
@@ -28,49 +29,54 @@ jobs:
           echo "下载地址: $TARBALL_URL"
           echo "版本号: $VERSION"
 
-      - name: 创建目标目录（使用 sudo）
-        run: |
-          sudo mkdir -p /var/apps/uptime-kuma/target
-          sudo chown -R $USER:$USER /var/apps/uptime-kuma
-
-      - name: 下载并解压源码包到 /var/apps/uptime-kuma/target/server
+      - name: 下载并解压源码包
         run: |
           curl -L "${{ steps.get_release.outputs.tarball_url }}" -o source.tar.gz
-          mkdir -p /var/apps/uptime-kuma/target/server
-          tar -xzf source.tar.gz --strip-components=1 -C /var/apps/uptime-kuma/target/server
+          mkdir uptime-kuma
+          tar -xzf source.tar.gz --strip-components=1 -C uptime-kuma
           rm source.tar.gz
-          ls -la /var/apps/uptime-kuma/target/server
+          ls -la uptime-kuma
 
       - name: 安装 Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: /var/apps/uptime-kuma/target/server/package-lock.json
+          cache-dependency-path: uptime-kuma/package-lock.json
 
-      - name: 执行构建（生产依赖 + download-dist）
+      - name: 执行构建 (npm ci --omit dev --no-audit && npm run download-dist)
         run: |
-          cd /var/apps/uptime-kuma/target/server
+          cd uptime-kuma
           npm ci --omit dev --no-audit
           npm run download-dist
 
-      - name: 上传指定的构建产物
+      - name: 提取指定文件和目录
+        run: |
+          mkdir artifact_content
+          cd uptime-kuma
+          # 复制指定的目录
+          for dir in config db dist extra node_modules public server src; do
+            if [ -e "$dir" ]; then
+              cp -r "$dir" ../artifact_content/
+            else
+              echo "警告: 目录 $dir 不存在，跳过"
+            fi
+          done
+          # 复制指定的文件
+          for file in ecosystem.config.js package-lock.json package.json tsconfig-backend.json tsconfig.json; do
+            if [ -f "$file" ]; then
+              cp "$file" ../artifact_content/
+            else
+              echo "警告: 文件 $file 不存在，跳过"
+            fi
+          done
+          cd ..
+          echo "提取完成，artifact_content 内容："
+          ls -la artifact_content/
+
+      - name: 上传构建产物（仅指定文件和目录）
         uses: actions/upload-artifact@v4
         with:
           name: uptime-kuma-${{ steps.get_release.outputs.version }}-${{ matrix.os }}
-          path: |
-            config
-            db
-            dist
-            extra
-            node_modules
-            public
-            server
-            src
-            ecosystem.config.js
-            package-lock.json
-            package.json
-            tsconfig-backend.json
-            tsconfig.json
-          working-directory: /var/apps/uptime-kuma/target/server
+          path: artifact_content/
           if-no-files-found: error
