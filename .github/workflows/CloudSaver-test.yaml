@@ -53,7 +53,7 @@ jobs:
           # 提取 /app/package.json
           docker cp "$CONTAINER_ID":/app/package.json extracted/app/
           # 提取 /app/config/release-content.local.json
-          docker cp "$CONTAINER_ID":/app/config/release-content.local.json extracted/app/config/
+          docker cp "$CONTAINER_ID":/app/release-content.local.default.json extracted/app/config/release-content.local.json
           # 提取 /app/dist-final 目录
           docker cp "$CONTAINER_ID":/app/dist-final extracted/app/
           # 提取 /usr/share/nginx/html 目录
