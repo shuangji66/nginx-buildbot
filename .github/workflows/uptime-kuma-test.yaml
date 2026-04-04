@@ -42,44 +42,46 @@ jobs:
       - name: 下载并解压源码包
         run: |
           curl -L "${{ steps.get_release.outputs.tarball_url }}" -o source.tar.gz
-          mkdir uptime-kuma
+          mkdir -p uptime-kuma
           tar -xzf source.tar.gz --strip-components=1 -C uptime-kuma
           rm source.tar.gz
           ls -la uptime-kuma
 
-      - name: 安装 Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: uptime-kuma/package-lock.json
-
-      - name: 执行构建 (npm ci --omit dev --no-audit && npm run download-dist)
+      - name: 使用 Docker 构建并提取产物（node:24.14.1-bookworm）
         run: |
-          cd uptime-kuma
-          npm ci --omit dev --no-audit
-          npm run download-dist
-
-      - name: 提取指定文件和目录
-        run: |
-          mkdir artifact_content
-          cd uptime-kuma
-          for dir in config db dist extra node_modules public server src; do
-            if [ -e "$dir" ]; then
-              cp -r "$dir" ../artifact_content/
-            else
-              echo "警告: 目录 $dir 不存在，跳过"
-            fi
-          done
-          for file in ecosystem.config.js package-lock.json package.json tsconfig-backend.json tsconfig.json; do
-            if [ -f "$file" ]; then
-              cp "$file" ../artifact_content/
-            else
-              echo "警告: 文件 $file 不存在，跳过"
-            fi
-          done
-          cd ..
-          echo "提取完成，artifact_content 内容："
+          # 准备空目录用于接收提取的产物
+          mkdir -p artifact_content
+          # 运行容器，挂载源码目录和输出目录
+          docker run --rm \
+            -v $(pwd)/uptime-kuma:/var/apps/uptime-kuma/target/server \
+            -v $(pwd)/artifact_content:/tmp/artifact_content \
+            -w /var/apps/uptime-kuma/target/server \
+            node:24.14.1-bookworm \
+            bash -c "
+              set -e
+              echo '安装生产依赖...'
+              npm ci --omit dev --no-audit
+              echo '下载前端资源...'
+              npm run download-dist
+              echo '提取指定文件和目录到 /tmp/artifact_content ...'
+              for dir in config db dist extra node_modules public server src; do
+                if [ -e \"\$dir\" ]; then
+                  cp -r \"\$dir\" /tmp/artifact_content/
+                else
+                  echo \"警告: 目录 \$dir 不存在，跳过\"
+                fi
+              done
+              for file in ecosystem.config.js package-lock.json package.json tsconfig-backend.json tsconfig.json; do
+                if [ -f \"\$file\" ]; then
+                  cp \"\$file\" /tmp/artifact_content/
+                else
+                  echo \"警告: 文件 \$file 不存在，跳过\"
+                fi
+              done
+              echo '提取完成，内容：'
+              ls -la /tmp/artifact_content/
+            "
+          echo "宿主机 artifact_content 内容："
           ls -la artifact_content/
 
       - name: 检出本仓库 (shuangji66/buildbot)
@@ -132,7 +134,6 @@ jobs:
           VERSION_CLEAN="${{ steps.set_version.outputs.version_clean }}"
           FINAL_NAME="uptime-kuma-${VERSION_CLEAN}-${{ env.PLATFORM }}.fpk"
           mv "$FPK_FILE" "$FINAL_NAME"
-          echo "FINAL_FPK=$FINAL_NAME" >> $GITHUB_ENV
           echo "打包完成，生成文件：$FINAL_NAME"
           ls -la *.fpk
 
@@ -142,56 +143,3 @@ jobs:
           name: fpk-${{ matrix.os }}
           path: build_workspace/*.fpk
           if-no-files-found: error
-
-  publish:
-    name: 发布到 Fndepot Release
-    runs-on: ubuntu-24.04
-    needs: build
-    if: always() && needs.build.result == 'success'
-    steps:
-      - name: 下载所有架构的 fpk 文件
-        uses: actions/download-artifact@v4
-        with:
-          pattern: fpk-*
-          path: fpk_files
-          merge-multiple: true
-
-      - name: 生成当前日期 tag（格式 年.月.日）
-        id: date_tag
-        run: |
-          TAG=$(date +'%Y.%-m.%-d')
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "RELEASE_TITLE=【$TAG 更新】" >> $GITHUB_OUTPUT
-          echo "Tag: $TAG"
-
-      - name: 使用 GitHub CLI 发布到 shuangji66/Fndepot
-        env:
-          GH_TOKEN: ${{ secrets.BUILDBOT }}
-        run: |
-          REPO="shuangji66/Fndepot"
-          TAG="${{ steps.date_tag.outputs.tag }}"
-          TITLE="${{ steps.date_tag.outputs.RELEASE_TITLE }}"
-          NEW_NOTE="action构建更新uptime-kuma"
-
-          # 检查 Release 是否已存在
-          if gh release view "$TAG" --repo "$REPO" &>/dev/null; then
-            echo "Release $TAG 已存在，将添加资产并追加描述"
-            # 获取当前描述
-            CURRENT_BODY=$(gh release view "$TAG" --repo "$REPO" --json body -q .body)
-            # 如果当前描述不为空，追加换行 + 新内容；否则直接使用新内容
-            if [ -n "$CURRENT_BODY" ]; then
-              NEW_BODY="${CURRENT_BODY}"$'\n'"$NEW_NOTE"
-            else
-              NEW_BODY="$NEW_NOTE"
-            fi
-            gh release edit "$TAG" --repo "$REPO" --notes "$NEW_BODY"
-          else
-            echo "Release $TAG 不存在，将创建新 Release"
-            gh release create "$TAG" --repo "$REPO" --title "$TITLE" --notes "$NEW_NOTE"
-          fi
-
-          # 上传所有 fpk 文件到该 Release
-          for fpk in fpk_files/*.fpk; do
-            echo "上传 $fpk"
-            gh release upload "$TAG" "$fpk" --repo "$REPO" --clobber
-          done
