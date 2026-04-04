@@ -53,7 +53,7 @@ jobs:
           # 提取 /app/package.json
           docker cp "$CONTAINER_ID":/app/package.json extracted/app/
           # 提取 /app/config/release-content.local.json
-          docker cp "$CONTAINER_ID":/app/config/release-content.local.json extracted/app/config/
+          docker cp "$CONTAINER_ID":/app/release-content.local.default.json extracted/app/config/release-content.local.json
           # 提取 /app/dist-final 目录
           docker cp "$CONTAINER_ID":/app/dist-final extracted/app/
           # 提取 /usr/share/nginx/html 目录
@@ -98,8 +98,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: build_workspace/CloudSaver/app/package-lock.json
 
       - name: 执行 npm install
         run: |
@@ -161,7 +159,7 @@ jobs:
             echo "错误：未找到生成的 fpk 文件"
             exit 1
           fi
-          FINAL_NAME="cloudsaver-${{ steps.set_vars.outputs.manifest_version }}-${{ env.PLATFORM }}.fpk"
+          FINAL_NAME="CloudSaver-${{ steps.set_vars.outputs.manifest_version }}-${{ env.PLATFORM }}.fpk"
           mv "$FPK_FILE" "$FINAL_NAME"
           echo "FINAL_FPK=$FINAL_NAME" >> $GITHUB_ENV
           echo "打包完成，生成文件：$FINAL_NAME"
