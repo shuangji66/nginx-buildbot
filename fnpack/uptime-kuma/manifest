@@ -14,4 +14,4 @@ desktop_uidir=ui
 desktop_applaunchname=uptime-kuma.Application
 checkport=false
 disable_authorization_path=false
-changelog=更新上游版本
+changelog=${CHANGELOG}
