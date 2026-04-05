@@ -1,0 +1,9 @@
+#!/bin/bash
+CONFIG_FILE="${TRIM_DATA_SHARE_PATHS%%:*}/config.yml"
+TEMPLATE_FILE="${TRIM_APPDEST}/template/config.yml"
+
+if [ ! -f "$CONFIG_FILE" ]; then
+    cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+fi
+
+exit 0

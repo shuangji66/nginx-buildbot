@@ -1,0 +1,18 @@
+{
+  ".url": {
+    "Tomato.Application": {
+      "noDisplay": false,
+      "allUsers": true,
+      "fileTypes": [],
+      "control": {
+        "accessPerm": "readonly"
+      },
+      "protocol": "http",
+      "title": "番茄小说下载器",
+      "icon": "images/icon_{0}.png",
+      "type": "iframe",
+      "port": "${ui_port}",
+      "url": ""
+    }
+  }
+}

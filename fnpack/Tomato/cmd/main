@@ -1,0 +1,110 @@
+#!/bin/bash
+HTTPS_PROXY=$https_proxy
+if [ "$proxy_switch" = "true" ]; then
+    export https_proxy=$HTTPS_PROXY
+elif [ "$proxy_switch" = "false" ]; then
+    unset https_proxy
+fi
+
+LOG_FILE="${TRIM_PKGVAR}/info.log"
+UI_PORT="$ui_port"
+UI_PASSWORD="$ui_password"
+
+if [ "${TRIM_SYS_ARCH}" = "x86" ]; then
+    APP_BIN="${TRIM_APPDEST}/server/TomatoNovelDownloader-Linux_musl_amd64"
+elif [ "${TRIM_SYS_ARCH}" = "arm" ]; then
+    APP_BIN="${TRIM_APPDEST}/server/TomatoNovelDownloader-Linux_musl_arm64"
+fi
+
+
+CMD="TOMATO_WEB_ADDR=0.0.0.0:$UI_PORT TOMATO_WEB_PASSWORD=$UI_PASSWORD ${APP_BIN} --server"
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+}
+
+find_pid() {
+    pgrep -f "TomatoNovelDown" 2>/dev/null | head -n 1
+}
+
+start_process() {
+    if status; then
+        return 0
+    fi
+
+    local current_pid
+    current_pid=$(find_pid)
+
+    if [ -n "$current_pid" ]; then
+       stop_process
+    fi
+
+    log_msg "Starting process ..."
+    # Run cmd to start process
+    cd "${TRIM_DATA_SHARE_PATHS%%:*}"
+    bash -c "${CMD}" >> ${LOG_FILE} 2>&1 &
+    log_msg "Process started with PID: $!"
+    return 0
+}
+
+stop_process() {
+    local pid_to_stop
+    pid_to_stop=$(find_pid)
+
+    if [ -z "$pid_to_stop" ]; then
+        log_msg "Process 'TomatoNovelDown' is not running (no PID found)."
+        return 0
+    fi
+
+    log_msg "Sending TERM signal to PID: $pid_to_stop..."
+    kill -TERM "$pid_to_stop" >> ${LOG_FILE} 2>&1
+
+    local count=0
+    while kill -0 "$pid_to_stop" 2>/dev/null && [ $count -lt 10 ]; do
+        sleep 1
+        count=$((count + 1))
+    done
+
+    if kill -0 "$pid_to_stop" 2>/dev/null; then
+        kill -KILL "$pid_to_stop"
+        sleep 1
+    else
+        log_msg "进程已停止."
+    fi
+
+    return 0
+}
+
+
+status() {
+    local pid
+    pid=$(find_pid)
+
+    if [ -n "$pid" ]; then
+        return 0  # Process is running
+    else
+        return 1  # Process is not running
+    fi
+}
+
+case $1 in
+start)
+    # run start command. exit 0 if success, exit 1 if failed
+    start_process
+    ;;
+stop)
+    # run stop command. exit 0 if success, exit 1 if failed
+    stop_process
+    ;;
+status)
+    # check application status command. exit 0 if running, exit 3 if not running
+    if status; then 
+        exit 0
+    else 
+        exit 3
+    fi
+    ;;
+*)
+    exit 1
+    ;;
+esac

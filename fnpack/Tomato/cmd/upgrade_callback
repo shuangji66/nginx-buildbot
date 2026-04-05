@@ -1,0 +1,36 @@
+#!/bin/bash
+# 定义进程名称
+PROCESS_NAME="TomatoNovelDown"
+
+# 1. 寻找进程 PID (pgrep 返回匹配的第一个 PID，如果有多个可能需要循环，这里假设单实例)
+# -x 表示精确匹配整个进程名
+pid=$(pgrep -x "${PROCESS_NAME}")
+
+# 2. 判断是否找到进程
+if [ -z "${pid}" ]; then
+    return 0
+fi
+
+# 3. 再次确认进程存在 (替代 check_process 函数)
+# kill -0 pid: 如果进程存在且有权操作，返回 0；否则返回非 0
+if ! kill -0 "${pid}" 2>/dev/null; then
+    return 0
+fi
+
+# 4. 发送 TERM 信号尝试优雅退出
+kill -TERM "${pid}" >> "${LOG_FILE}" 2>&1
+
+# 5. 等待进程结束 (最多等待 3 秒)
+local count=0
+while kill -0 "${pid}" 2>/dev/null && [ $count -lt 3 ]; do
+    sleep 1
+    count=$((count + 1))
+done
+
+# 6. 如果进程还在，强制杀死 (KILL)
+if kill -0 "${pid}" 2>/dev/null; then
+    kill -KILL "${pid}" >> "${LOG_FILE}" 2>&1
+    sleep 1
+fi
+
+exit 0

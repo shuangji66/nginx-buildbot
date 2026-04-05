@@ -1,0 +1,22 @@
+{
+  "data-share": {
+    "shares": [
+      {
+        "name": "Tomato",
+        "permission": {
+          "rw": [
+            "Tomato"
+          ]
+        }
+      },
+      {
+        "name": "Tomato/book",
+        "permission": {
+          "rw": [
+            "Tomato"
+          ]
+        }
+      }
+    ]
+  }
+}
