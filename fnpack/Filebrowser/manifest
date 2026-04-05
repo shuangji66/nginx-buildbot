@@ -1,0 +1,16 @@
+appname=Filebrowser
+version=${VERSION}
+display_name=Filebrowser
+desc="""📂文件浏览器可以方便地上传、删除、预览和编辑飞牛所有文件，root运行，注意数据安全。"""
+platform=${PLATFORM}
+source=thirdparty
+maintainer=filebrowser
+maintainer_url=https://github.com/filebrowser/filebrowser
+distributor=shuangji66
+distributor_url=https://github.com/shuangji66/FnDepot
+ctl_stop=true
+desktop_uidir=ui
+desktop_applaunchname=Filebrowser.Application
+checkport=false
+disable_authorization_path=false
+changelog=${CHANGELOG}

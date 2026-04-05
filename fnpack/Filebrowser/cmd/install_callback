@@ -1,0 +1,39 @@
+#!/bin/bash
+#--- 初始化数据库及配置 ---
+FB_ADMIN="$fb_admin"
+FB_PASSWORD="$fb_password"
+FB_PORT="$fb_port"
+FB_ROOT="$fb_root"
+LOG_FILE="${TRIM_PKGVAR}/info.log"
+DB_FILE="${TRIM_PKGHOME}/filebrowser.db"
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+}
+
+if [ -f "$DB_FILE" ]; then
+    log_msg "数据库文件 $DB_FILE 已存在，跳过初始化。"
+else
+    log_msg "未检测到数据库文件，开始初始化..."
+    ${TRIM_APPDEST}/server/filebrowser -d ${DB_FILE} config init
+    if [ $? -ne 0 ]; then
+        log_msg "错误: 数据库初始化失败！"
+        exit 1
+    fi
+    
+    ${TRIM_APPDEST}/server/filebrowser -d ${DB_FILE} config set -a 0.0.0.0 -p $FB_PORT -r $FB_ROOT --locale zh-cn
+    if [ $? -ne 0 ]; then
+        log_msg "错误: 配置设置失败！"
+        exit 1
+    fi
+    
+    ${TRIM_APPDEST}/server/filebrowser -d ${DB_FILE} users add $FB_ADMIN $FB_PASSWORD --perm.admin
+    if [ $? -ne 0 ]; then
+        log_msg "错误: 用户创建失败！"
+        exit 1
+    fi
+    
+    log_msg "数据库已成功初始化并完成配置"
+fi
+
+exit 0

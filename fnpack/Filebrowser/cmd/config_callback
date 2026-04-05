@@ -1,0 +1,14 @@
+#!/bin/bash
+
+### This script is called after the user change environment variables in application setting page.
+FB_ADMIN="$fb_admin"
+FB_PASSWORD="$fb_password"
+FB_PORT="$fb_port"
+FB_ROOT="$fb_root"
+
+rm -f ${TRIM_PKGHOME}/filebrowser.db
+${TRIM_APPDEST}/filebrowser -d ${TRIM_PKGHOME}/filebrowser.db config init
+${TRIM_APPDEST}/filebrowser -d ${TRIM_PKGHOME}/filebrowser.db config set -a 0.0.0.0 -p $FB_PORT -r $FB_ROOT --locale zh-cn
+${TRIM_APPDEST}/filebrowser -d ${TRIM_PKGHOME}/filebrowser.db users add $FB_ADMIN $FB_PASSWORD --perm.admin
+
+exit 0

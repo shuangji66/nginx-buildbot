@@ -1,0 +1,60 @@
+[
+  {
+    "stepTitle": "欢迎使用",
+    "items": [
+      {
+        "type": "text",
+        "field": "fb_port",
+        "label": "端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入端口"
+          }
+        ],
+        "options": [],
+        "initValue": ""
+      },
+      {
+        "type": "text",
+        "field": "fb_root",
+        "label": "目录范围",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入目录范围"
+          }
+        ],
+        "options": [],
+        "initValue": "."
+      },
+      {
+        "type": "text",
+        "field": "fb_admin",
+        "label": "用户名",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入用户名"
+          }
+        ],
+        "options": [],
+        "initValue": ""
+      },
+      {
+        "type": "password",
+        "field": "fb_password",
+        "label": "密码",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入密码,不小于12位"
+          }
+        ],
+        "options": [],
+        "helpText": "密码包含数字、字母、标点中的任意两种，不小于12位，不包含特殊字符",
+        "initValue": ""
+      }
+    ]
+  }
+]
