@@ -133,3 +133,16 @@ jobs:
           name: fpk-${{ matrix.os }}
           path: build_workspace/*.fpk
           archive: false
+
+  publish:
+    name: 发布到 Fndepot Release
+    needs: build
+    if: always() && needs.build.result == 'success'
+    uses: ./.github/workflows/publish.yaml
+    with:
+      app_name: ${{ needs.build.outputs.app_name }}
+      manifest_version: ${{ needs.build.outputs.manifest_version }}
+      upstream_version: ${{ needs.build.outputs.upstream_version }}
+      changelog: ${{ needs.build.outputs.changelog }}
+    secrets:
+      BUILDBOT: ${{ secrets.BUILDBOT }}
