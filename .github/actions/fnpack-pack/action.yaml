@@ -1,0 +1,60 @@
+name: 'Fnpack 打包与上传通用脚本'
+description: '修改 manifest、执行 fnpack build、上传 fpk 产物'
+inputs:
+  app_name:
+    description: '应用名称'
+    required: true
+  manifest_version:
+    description: 'manifest 版本号'
+    required: true
+  changelog:
+    description: '更新日志'
+    required: true
+  platform:
+    description: '平台标识（x86 或 arm）'
+    required: true
+  workspace_dir:
+    description: '工作区根目录（包含 build_workspace 的目录）'
+    required: false
+    default: '.'
+runs:
+  using: composite
+  steps:
+    - name: 修改 manifest 文件
+      shell: bash
+      run: |
+        MANIFEST_PATH="${{ inputs.workspace_dir }}/build_workspace/${{ inputs.app_name }}/manifest"
+        if [ ! -f "$MANIFEST_PATH" ]; then
+          echo "错误：manifest 文件不存在于 $MANIFEST_PATH"
+          exit 1
+        fi
+        CHANGELOG="${{ inputs.changelog }}"
+        ESCAPED_CHANGELOG=$(printf '%s\n' "$CHANGELOG" | sed 's/[&/\]/\\&/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+        sed -i "s/\${VERSION}/${{ inputs.manifest_version }}/g" "$MANIFEST_PATH"
+        sed -i "s/\${CHANGELOG}/$ESCAPED_CHANGELOG/g" "$MANIFEST_PATH"
+        sed -i "s/\${PLATFORM}/${{ inputs.platform }}/g" "$MANIFEST_PATH"
+        echo "manifest 修改后的内容："
+        cat "$MANIFEST_PATH"
+
+    - name: 执行 fnpack 打包
+      shell: bash
+      run: |
+        cd "${{ inputs.workspace_dir }}/build_workspace"
+        ./fnpack build "${{ inputs.app_name }}"
+        FPK_FILE=$(ls *.fpk | head -n 1)
+        if [ -z "$FPK_FILE" ]; then
+          echo "错误：未找到生成的 fpk 文件"
+          exit 1
+        fi
+        FINAL_NAME="${{ inputs.app_name }}-${{ inputs.manifest_version }}-${{ inputs.platform }}.fpk"
+        mv "$FPK_FILE" "$FINAL_NAME"
+        echo "FINAL_FPK=$FINAL_NAME" >> $GITHUB_ENV
+        echo "打包完成，生成文件：$FINAL_NAME"
+        ls -la *.fpk
+
+    - name: 上传 fpk 文件作为 Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: fpk-${{ runner.os }}-${{ inputs.platform }}
+        path: ${{ inputs.workspace_dir }}/build_workspace/*.fpk
+        if-no-files-found: error
