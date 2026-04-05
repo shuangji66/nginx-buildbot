@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: '软件版本号（不带 v，例如 2.63.1）'
+        description: '上游软件版本号（不带 v，例如 2.63.1）'
         required: true
         type: string
       manifest_version:
-        description: 'manifest 中的版本号（例如 1.0.0，用于 fpk 包）'
+        description: 'manifest 中的版本号'
         required: true
         type: string
       changelog:
@@ -71,21 +71,16 @@ jobs:
           BINARY="${{ steps.set_vars.outputs.binary_name }}"
           chmod +x "$BINARY"
 
-      - name: 检出 buildbot 仓库
-        uses: actions/checkout@v4
-        with:
-          path: buildbot_repo
-
       - name: 准备 fnpack 工具和模板
         run: |
           mkdir -p build_workspace
-          cp -r "buildbot_repo/fnpack/${{ steps.set_vars.outputs.app_name }}" build_workspace/
+          cp -r "fnpack/${{ steps.set_vars.outputs.app_name }}" build_workspace/
           if [ "${{ matrix.os }}" = "ubuntu-24.04" ]; then
             FNPACK_BIN="fnpack-1.2.1-linux-amd64"
           else
             FNPACK_BIN="fnpack-1.2.1-linux-arm64"
           fi
-          cp "buildbot_repo/fnpack/$FNPACK_BIN" build_workspace/fnpack
+          cp "fnpack/$FNPACK_BIN" build_workspace/fnpack
           chmod +x build_workspace/fnpack
 
       # ========== 项目特有的复制步骤 ==========
@@ -97,7 +92,7 @@ jobs:
       # =====================================
 
       - name: 调用通用 fnpack 打包与上传
-        uses: ./.github/actions/fnpack-pack/
+        uses: ./.github/actions/fnpack-pack
         with:
           app_name: ${{ steps.set_vars.outputs.app_name }}
           manifest_version: ${{ steps.set_vars.outputs.manifest_version }}
