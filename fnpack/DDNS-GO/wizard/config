@@ -1,0 +1,48 @@
+[
+  {
+    "stepTitle": "DDNS-GO配置",
+    "items": [
+      {
+        "type": "text",
+        "field": "ui_port",
+        "label": "UI端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "9876"
+      },
+      {
+        "type": "text",
+        "field": "ddns_fre",
+        "label": "更新频率(秒)",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "helpText": "默认300秒",
+        "initValue": "300"
+      },
+      {
+        "type": "text",
+        "field": "ddns_dns",
+        "label": "DNS服务器",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "helpText": "同步失败可考虑切换DNS",
+        "initValue": "223.5.5.5"
+      }
+    ]
+  }
+]

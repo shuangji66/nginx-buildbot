@@ -1,0 +1,18 @@
+{
+  ".url": {
+    "DDNS-GO.Application": {
+      "noDisplay": false,
+      "allUsers": true,
+      "fileTypes": [],
+      "control": {
+        "accessPerm": "readonly"
+      },
+      "protocol": "http",
+      "title": "DDNS-GO",
+      "icon": "images/icon_{0}.png",
+      "type": "iframe",
+      "port": "${ui_port}",
+      "url": ""
+    }
+  }
+}
