@@ -117,7 +117,7 @@ jobs:
   publish:
     name: 发布到 Fndepot Release
     needs: build
-        if: always() && needs.build.result == 'success' && github.event.inputs.publish == 'true'
+    if: always() && needs.build.result == 'success' && github.event.inputs.publish == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: 下载 fpk 文件
