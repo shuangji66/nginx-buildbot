@@ -1,0 +1,283 @@
+name: Build EasyTier and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '上游软件版本号（例如 2.6.0，不带 v）'
+        required: true
+        type: string
+      manifest_version:
+        description: 'manifest 中的版本号（例如 2.6.0-1）'
+        required: true
+        type: string
+      changelog:
+        description: '更新日志（支持中文）'
+        required: true
+        type: string
+      publish:
+        description: '是否发布到 Fndepot Release'
+        required: false
+        type: boolean
+        default: true
+      target_repo:
+        description: 'EasyTier 源码仓库（格式: owner/repo）'
+        required: false
+        type: string
+        default: 'EasyTier/EasyTier'
+      workflow_name:
+        description: '构建 workflow 文件名'
+        required: false
+        type: string
+        default: 'core.yml'
+      branch:
+        description: '分支名称'
+        required: false
+        type: string
+        default: 'main'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: x86
+            artifact_name: easytier-linux-x86_64
+            download_arch: x86_64
+          - os: ubuntu-24.04-arm
+            platform: arm
+            artifact_name: easytier-linux-aarch64
+            download_arch: aarch64
+    runs-on: ${{ matrix.os }}
+    outputs:
+      app_name: ${{ steps.set_vars.outputs.app_name }}
+      manifest_version: ${{ steps.set_vars.outputs.manifest_version }}
+      upstream_version: ${{ steps.set_vars.outputs.upstream_version }}
+      changelog: ${{ steps.set_vars.outputs.changelog }}
+    steps:
+      - name: 设置项目变量
+        id: set_vars
+        run: |
+          APP_NAME="EasyTier"
+          VERSION="${{ github.event.inputs.version }}"
+          MANIFEST_VERSION="${{ github.event.inputs.manifest_version }}"
+          CHANGELOG="${{ github.event.inputs.changelog }}"
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+          echo "upstream_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "manifest_version=$MANIFEST_VERSION" >> $GITHUB_OUTPUT
+          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+
+      - name: 确定架构和平台标识
+        id: arch
+        run: |
+          echo "platform=${{ matrix.platform }}" >> $GITHUB_OUTPUT
+          echo "artifact_name=${{ matrix.artifact_name }}" >> $GITHUB_OUTPUT
+
+      - name: 从 EasyTier 仓库下载最新 artifact
+        env:
+          GH_TOKEN: ${{ secrets.BUILDBOT }}
+          TARGET_REPO: ${{ github.event.inputs.target_repo }}
+          WORKFLOW_NAME: ${{ github.event.inputs.workflow_name }}
+          BRANCH: ${{ github.event.inputs.branch }}
+          ARTIFACT_NAME: ${{ matrix.artifact_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+
+          echo "🔍 查找 workflow '$WORKFLOW_NAME' 分支 '$BRANCH' 的成功运行..."
+          runs_json=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/$TARGET_REPO/actions/workflows/$WORKFLOW_NAME/runs?branch=$BRANCH&status=success&per_page=30")
+          run_ids=$(echo "$runs_json" | jq -r '.workflow_runs[].id')
+
+          if [ -z "$run_ids" ]; then
+            echo "❌ 未找到成功的 workflow 运行"
+            exit 1
+          fi
+
+          found_run_id=""
+          artifacts_json=""
+          for run_id in $run_ids; do
+            echo "检查运行 ID: $run_id ..."
+            artifacts_json=$(curl -s -H "Authorization: token $GH_TOKEN" \
+              "https://api.github.com/repos/$TARGET_REPO/actions/runs/$run_id/artifacts")
+            artifact_count=$(echo "$artifacts_json" | jq '.total_count')
+            if [ "$artifact_count" -eq 0 ]; then
+              continue
+            fi
+            # 检查是否存在匹配的 artifact 名称
+            matched=$(echo "$artifacts_json" | jq --arg name "$ARTIFACT_NAME" '.artifacts[] | select(.name == $name) | .name')
+            if [ -n "$matched" ]; then
+              found_run_id=$run_id
+              echo "🎯 找到匹配的 artifact 在运行 ID: $found_run_id"
+              break
+            fi
+          done
+
+          if [ -z "$found_run_id" ]; then
+            echo "❌ 未找到名为 '$ARTIFACT_NAME' 的 artifact"
+            exit 1
+          fi
+
+          # 获取 artifact 下载 URL
+          artifact_id=$(echo "$artifacts_json" | jq --arg name "$ARTIFACT_NAME" -r '.artifacts[] | select(.name == $name) | .id')
+          download_url="https://api.github.com/repos/$TARGET_REPO/actions/artifacts/$artifact_id/zip"
+          echo "⬇️ 下载 artifact: $ARTIFACT_NAME"
+          curl -L -H "Authorization: token $GH_TOKEN" -o artifact.zip "$download_url"
+          unzip artifact.zip -d extracted
+          echo "解压完成，内容："
+          ls -la extracted/
+
+      - name: 检出 buildbot 仓库
+        uses: actions/checkout@v6
+        with:
+          path: buildbot_repo
+
+      - name: 准备 fnpack 工具和模板
+        run: |
+          mkdir -p build_workspace
+          cp -r "buildbot_repo/fnpack/${{ steps.set_vars.outputs.app_name }}" build_workspace/
+          if [ "${{ matrix.os }}" = "ubuntu-24.04" ]; then
+            FNPACK_BIN="fnpack-1.2.1-linux-amd64"
+          else
+            FNPACK_BIN="fnpack-1.2.1-linux-arm64"
+          fi
+          cp "buildbot_repo/fnpack/$FNPACK_BIN" build_workspace/fnpack
+          chmod +x build_workspace/fnpack
+
+      # ========== 项目特有的复制步骤 ==========
+      - name: 提取并复制 easytier-core 和 easytier-web-embed 到 app/server
+        run: |
+          APP_DIR="build_workspace/${{ steps.set_vars.outputs.app_name }}/app"
+          mkdir -p "$APP_DIR/server"
+          # 解压后的目录中查找文件（可能位于根目录或子目录）
+          find extracted -name "easytier-core" -type f -executable -exec cp {} "$APP_DIR/server/" \;
+          find extracted -name "easytier-web-embed" -type f -executable -exec cp {} "$APP_DIR/server/" \;
+          echo "复制完成，app/server 目录内容："
+          ls -la "$APP_DIR/server"
+      # =====================================
+
+      - name: 修改 manifest 文件
+        run: |
+          MANIFEST_PATH="build_workspace/${{ steps.set_vars.outputs.app_name }}/manifest"
+          if [ ! -f "$MANIFEST_PATH" ]; then
+            echo "错误：manifest 文件不存在于 $MANIFEST_PATH"
+            exit 1
+          fi
+          MANIFEST_VERSION="${{ steps.set_vars.outputs.manifest_version }}"
+          CHANGELOG="${{ steps.set_vars.outputs.changelog }}"
+          sudo apt-get update && sudo apt-get install -y jq
+          ESCAPED_CHANGELOG=$(printf '%s' "$CHANGELOG" | jq -sRr @json)
+          sed -i "s/\${VERSION}/$MANIFEST_VERSION/g" "$MANIFEST_PATH"
+          sed -i "s/\${CHANGELOG}/$ESCAPED_CHANGELOG/g" "$MANIFEST_PATH"
+          sed -i "s/\${PLATFORM}/${{ matrix.platform }}/g" "$MANIFEST_PATH"
+          echo "manifest 修改后的内容："
+          cat "$MANIFEST_PATH"
+
+      - name: 执行 fnpack 打包
+        run: |
+          cd build_workspace
+          ./fnpack build "${{ steps.set_vars.outputs.app_name }}"
+          FPK_FILE=$(ls *.fpk | head -n 1)
+          if [ -z "$FPK_FILE" ]; then
+            echo "错误：未找到生成的 fpk 文件"
+            exit 1
+          fi
+          FINAL_NAME="${{ steps.set_vars.outputs.app_name }}-${{ steps.set_vars.outputs.manifest_version }}-${{ matrix.platform }}.fpk"
+          mv "$FPK_FILE" "$FINAL_NAME"
+          echo "FINAL_FPK=$FINAL_NAME" >> $GITHUB_ENV
+          echo "打包完成，生成文件：$FINAL_NAME"
+          ls -la *.fpk
+
+      - name: 上传 fpk 文件作为 Artifact（供发布任务使用）
+        uses: actions/upload-artifact@v7
+        with:
+          name: fpk-${{ matrix.platform }}
+          path: build_workspace/*.fpk
+          if-no-files-found: error
+
+  publish:
+    name: 发布到 Fndepot Release
+    needs: build
+    if: always() && needs.build.result == 'success' && github.event.inputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 下载所有架构的 fpk 文件
+        uses: actions/download-artifact@v7
+        with:
+          path: fpk_files
+          merge-multiple: true
+
+      - name: 生成当前日期 tag（格式 年.月.日）
+        id: date_tag
+        run: |
+          TAG=$(date +'%Y.%-m.%-d')
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "RELEASE_TITLE=【$TAG 更新】" >> $GITHUB_OUTPUT
+          echo "Tag: $TAG"
+
+      - name: 使用 GitHub CLI 发布到 shuangji66/Fndepot
+        env:
+          GH_TOKEN: ${{ secrets.BUILDBOT }}
+        run: |
+          REPO="shuangji66/Fndepot"
+          TAG="${{ steps.date_tag.outputs.tag }}"
+          TITLE="${{ steps.date_tag.outputs.RELEASE_TITLE }}"
+          MANIFEST_VERSION="${{ needs.build.outputs.manifest_version }}"
+          UPSTREAM_VERSION="${{ needs.build.outputs.upstream_version }}"
+          CHANGELOG="${{ needs.build.outputs.changelog }}"
+
+          NEW_NOTE="构建 ${{ needs.build.outputs.app_name }} 版本 ${MANIFEST_VERSION}（基于上游 v${UPSTREAM_VERSION}）。更新日志：${CHANGELOG}"
+
+          if gh release view "$TAG" --repo "$REPO" &>/dev/null; then
+            echo "Release $TAG 已存在，将添加资产并追加描述"
+            CURRENT_BODY=$(gh release view "$TAG" --repo "$REPO" --json body -q .body)
+            if [ -n "$CURRENT_BODY" ]; then
+              NEW_BODY="${CURRENT_BODY}"$'\n'"$NEW_NOTE"
+            else
+              NEW_BODY="$NEW_NOTE"
+            fi
+            gh release edit "$TAG" --repo "$REPO" --notes "$NEW_BODY"
+          else
+            echo "Release $TAG 不存在，将创建新 Release"
+            gh release create "$TAG" --repo "$REPO" --title "$TITLE" --notes "$NEW_NOTE"
+          fi
+
+          for fpk in fpk_files/*.fpk; do
+            echo "上传 $fpk"
+            gh release upload "$TAG" "$fpk" --repo "$REPO" --clobber
+          done
+
+      - name: 更新 fnpack.json 中的 EasyTier 条目
+        env:
+          GH_TOKEN: ${{ secrets.BUILDBOT }}
+        run: |
+          REPO="shuangji66/Fndepot"
+          TAG="${{ steps.date_tag.outputs.tag }}"
+          APP_NAME="${{ needs.build.outputs.app_name }}"
+          MANIFEST_VERSION="${{ needs.build.outputs.manifest_version }}"
+          CHANGELOG="${{ needs.build.outputs.changelog }}"
+
+          DOWNLOAD_URL_X86="https://github.com/${REPO}/releases/download/${TAG}/${APP_NAME}-${MANIFEST_VERSION}-x86.fpk"
+          DOWNLOAD_URL_ARM="https://github.com/${REPO}/releases/download/${TAG}/${APP_NAME}-${MANIFEST_VERSION}-arm.fpk"
+
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" fndepot_repo
+          cd fndepot_repo
+
+          jq --arg app "$APP_NAME" \
+             --arg version "$MANIFEST_VERSION" \
+             --arg changelog "$CHANGELOG" \
+             --arg url_x86 "$DOWNLOAD_URL_X86" \
+             --arg url_arm "$DOWNLOAD_URL_ARM" \
+             '.[$app].version = $version |
+              .[$app].changelog = $changelog |
+              .[$app].arch_diff.x86.download_url = $url_x86 |
+              .[$app].arch_diff.arm.download_url = $url_arm' \
+             fnpack.json > fnpack.json.tmp
+          mv fnpack.json.tmp fnpack.json
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add fnpack.json
+          git commit -m "chore: update ${APP_NAME} to ${MANIFEST_VERSION} (${TAG})"
+          git push
