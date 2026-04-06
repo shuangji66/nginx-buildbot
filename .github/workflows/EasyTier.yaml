@@ -227,7 +227,7 @@ jobs:
           UPSTREAM_VERSION="${{ needs.build.outputs.upstream_version }}"
           CHANGELOG="${{ needs.build.outputs.changelog }}"
 
-          NEW_NOTE="构建 ${{ needs.build.outputs.app_name }} 版本 ${MANIFEST_VERSION}（基于上游 v${UPSTREAM_VERSION}）。更新日志：${CHANGELOG}"
+          NEW_NOTE="构建 ${{ needs.build.outputs.app_name }} 版本 ${MANIFEST_VERSION}（基于上游最新action构建）。更新日志：${CHANGELOG}"
 
           if gh release view "$TAG" --repo "$REPO" &>/dev/null; then
             echo "Release $TAG 已存在，将添加资产并追加描述"
