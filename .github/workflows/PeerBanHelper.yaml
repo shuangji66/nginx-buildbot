@@ -192,7 +192,7 @@ jobs:
           mv fnpack.json.tmp fnpack.json
 
           git config user.name "github-actions[bot]"
-          git config.user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add fnpack.json
           git commit -m "chore: update ${APP_NAME} to ${MANIFEST_VERSION} (${TAG})"
           git push
