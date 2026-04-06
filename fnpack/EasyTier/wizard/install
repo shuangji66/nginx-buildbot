@@ -1,0 +1,87 @@
+[
+  {
+    "stepTitle": "欢迎使用",
+    "items": [
+      {
+        "type": "radio",
+        "field": "easytier_mode",
+        "label": "运行模式",
+        "rules": [],
+        "options": [
+          {
+            "label": "配置文件",
+            "value": "config"
+          },
+          {
+            "label": "web控制台",
+            "value": "web"
+          }
+        ],
+        "helpText": "配置文件模式节省内存，web控制台直观方便，推荐先在web控制台设置好后导出toml配置，再以配置模式运行",
+        "initValue": "web"
+      },
+      {
+        "type": "text",
+        "field": "ui_port",
+        "label": "web控制台ui端口和api端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "11211"
+      },
+      {
+        "type": "text",
+        "field": "ui_username",
+        "label": "web控制台注册用户名",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": ""
+      },
+      {
+        "type": "text",
+        "field": "config_name",
+        "label": "配置文件模式组网名",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "helpText": "仅在初次安装生成默认配置文件，路径\"应用文件/EasyTier/config\"",
+        "initValue": ""
+      },
+      {
+        "type": "password",
+        "field": "config_secret",
+        "label": "配置文件模式密钥",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": ""
+      },
+      {
+        "type": "text",
+        "field": "peer_url",
+        "label": "配置模式公共节点",
+        "rules": [],
+        "options": [],
+        "helpText": "官方节点经常炸，配置文件中已注释掉，建议自己修改节点或自定义配置文件",
+        "initValue": "tcp://public.easytier.top:11010"
+      }
+    ]
+  }
+]

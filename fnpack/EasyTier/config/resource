@@ -1,0 +1,22 @@
+{
+  "data-share": {
+    "shares": [
+      {
+        "name": "EasyTier",
+        "permission": {
+          "rw": [
+            "EasyTier"
+          ]
+        }
+      },
+      {
+        "name": "EasyTier/config",
+        "permission": {
+          "rw": [
+            "EasyTier"
+          ]
+        }
+      }
+    ]
+  }
+}

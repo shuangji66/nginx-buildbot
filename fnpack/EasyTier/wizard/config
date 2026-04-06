@@ -1,0 +1,51 @@
+[
+  {
+    "stepTitle": "欢迎使用",
+    "items": [
+      {
+        "type": "radio",
+        "field": "easytier_mode",
+        "label": "运行模式",
+        "rules": [],
+        "options": [
+          {
+            "label": "配置文件",
+            "value": "config"
+          },
+          {
+            "label": "web控制台",
+            "value": "web"
+          }
+        ],
+        "helpText": "配置文件模式节省内存，web控制台直观方便，推荐先在web控制台设置好后导出toml配置，再以配置模式运行",
+        "initValue": "web"
+      },
+      {
+        "type": "text",
+        "field": "ui_port",
+        "label": "web控制台ui端口和api端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "11211"
+      },
+      {
+        "type": "text",
+        "field": "ui_username",
+        "label": "web控制台注册用户名",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": ""
+      }
+    ]
+  }
+]
