@@ -1,0 +1,16 @@
+appname=Read
+version=${VERSION}
+display_name=轻阅读
+desc="""<p>📚轻阅读是一款开源的多平台阅读器，支持Android、iOS、HarmonyOS、Windows、MacOS和服务端，提供丰富的功能和灵活的部署选项。💡软件依赖Java25环境，优先调用java-25-openj9。</p><p>⭐使用方法：</p><p>安装时填写管理账户和密码，安装后进入“http://host:port/admin”管理后台添加用户、书源、注册码等设置，具体用法参考官方文档“https://www.qread.xyz/docs.html”</p>"""
+platform=all
+source=thirdparty
+maintainer=autobcb
+maintainer_url=https://github.com/autobcb/read
+distributor=shuangji66
+distributor_url=https://github.com/shuangji66/FnDepot
+ctl_stop=true
+desktop_uidir=ui
+desktop_applaunchname=Read.Application
+checkport=false
+disable_authorization_path=false
+changelog=${CHANGELOG}

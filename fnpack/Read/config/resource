@@ -1,0 +1,22 @@
+{
+  "data-share": {
+    "shares": [
+      {
+        "name": "Read",
+        "permission": {
+          "rw": [
+            "Read"
+          ]
+        }
+      },
+      {
+        "name": "Read/logs",
+        "permission": {
+          "rw": [
+            "Read"
+          ]
+        }
+      }
+    ]
+  }
+}

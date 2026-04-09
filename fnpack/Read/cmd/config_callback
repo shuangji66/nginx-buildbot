@@ -1,0 +1,31 @@
+#!/bin/bash
+LOG_FILE="${TRIM_DATA_SHARE_PATHS%%:*}/logs/read.log"
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+}
+
+#---重置config---
+#---变量定义---
+gg_tips="${gg_tips:-""}"
+CONFIG_TEMPLATE="${TRIM_APPDEST}/template/conf.tpl"
+CONFIG_FILE="${TRIM_DATA_SHARE_PATHS%%:*}/conf.yml"
+sed \
+  -e "s|\${GG_TIPS}|$gg_tips|g" \
+  -e "s|\${ADMIN_USERNAME}|$admin_username|g" \
+  -e "s|\${ADMIN_PASSWORD}|$admin_password|g" \
+  -e "s|\${BOOK_UPDATE}|$book_update|g" \
+  -e "s|\${ADMIN_CODE}|$admin_code|g" \
+  -e "s|\${ALLOW_CHANGE}|$allow_change|g" \
+  -e "s|\${ALLOW_UPTXT}|$allow_uptxt|g" \
+  -e "s|\${ALLOW_IMG}|$allow_img|g" \
+  -e "s|\${ALLOW_CHECK}|$allow_check|g" \
+  -e "s|\${SOURCE}|$source|g" \
+  -e "s|\${MAX_SOURCE}|$max_source|g" \
+  -e "s|\${TIMEOUT}|$timeout|g" \
+  -e "s|\${PROXYPNG}|$proxypng|g" \
+  -e "s|\${WEB_MODE}|$web_mode|g" \
+  "$CONFIG_TEMPLATE" > "$CONFIG_FILE"
+log_msg "已生成conf.yml"
+
+exit 0

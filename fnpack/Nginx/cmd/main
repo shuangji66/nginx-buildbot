@@ -1,0 +1,137 @@
+#!/bin/bash
+LOG_FILE="${TRIM_DATA_SHARE_PATHS%%:*}/logs/info.log"
+NGINX_PID="${TRIM_PKGVAR}/nginx.pid"
+NGINX_UI_PID="${TRIM_PKGVAR}/nginx-ui.pid"
+
+if [ "$nginx_version" = "main" ]; then
+    export PATH="${TRIM_APPDEST}/server/main:$PATH"
+elif [ "$nginx_version" = "stable" ]; then
+    export PATH="${TRIM_APPDEST}/server/stable:$PATH"
+fi
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+}
+
+start_process() {
+    if status; then
+        return 0
+    fi
+
+    # 启动nginx
+    bash -c nginx >> ${LOG_FILE} 2>&1 &
+    printf "%s" "$!" > ${NGINX_PID}
+    log_msg "nginx已启动"
+    # 启动nginx-ui
+    if [ "$nginx_ui" = "on" ]; then
+        nohup ${TRIM_APPDEST}/server/nginx-ui -config ${TRIM_PKGVAR}/nginx-ui/app.ini 2>&1 &
+        printf "%s" "$!" > ${NGINX_UI_PID}
+        log_msg "nginx-ui已开启"
+    else
+        log_msg "nginx-ui未开启"
+    fi
+    
+    return 0
+}
+
+stop_process() {
+    log_msg "Stopping process..."
+
+    if [ -r "${NGINX_PID}" ]; then
+        nginx_pid=$(head -n 1 "${NGINX_PID}" | tr -d '[:space:]')
+
+        if check_process "${nginx_pid}"; then
+            log_msg "Sending TERM signal to main PID:${nginx_pid}..."
+            kill -TERM ${nginx_pid} >> ${LOG_FILE} 2>&1
+
+            local count=0
+            while check_process "${nginx_pid}" && [ $count -lt 10 ]; do
+                sleep 1
+                count=$((count + 1))
+                log_msg "Waiting for all Nginx processes to shut down gracefully... (${count}s/10s)"
+            done
+        fi
+
+        if check_process "${nginx_pid}"; then
+            log_msg "send KILL signal to PID:${nginx_pid}..."
+            kill -KILL "${nginx_pid}"
+            sleep 1
+            rm -f "${NGINX_PID}"
+        else
+            log_msg "nginx process killed"
+        fi
+    fi
+
+    if [ -r "${NGINX_UI_PID}" ]; then
+        nginx_ui_pid=$(head -n 1 "${NGINX_UI_PID}" | tr -d '[:space:]')
+
+        if check_process "${nginx_ui_pid}"; then
+            log_msg "Sending TERM signal to main PID:${nginx_ui_pid}..."
+            kill -TERM ${nginx_ui_pid} >> ${LOG_FILE} 2>&1
+
+            local count=0
+            while check_process "${nginx_ui_pid}" && [ $count -lt 5 ]; do
+                sleep 1
+                count=$((count + 1))
+                log_msg "Waiting for graceful shutdown... (${count}s/5s)"
+            done
+        fi
+
+        if check_process "${nginx_ui_pid}"; then
+            log_msg "send KILL signal to PID:${nginx_ui_pid}..."
+            kill -KILL "${nginx_ui_pid}"
+            sleep 1
+            rm -f "${NGINX_UI_PID}"
+        else
+            log_msg "nginx-ui process killed"
+        fi
+    fi
+
+    log_msg "Stop process completed."
+    return 0
+}
+
+check_process() {
+    local pid=$1
+    if kill -0 "${pid}" 2>/dev/null; then
+        return 0  # process exist
+    else
+        return 1  # process not exist
+    fi
+}
+
+status() {
+    if [ -f "${NGINX_PID}" ]; then
+        pid=$(head -n 1 "${NGINX_PID}" | tr -d '[:space:]')
+        if check_process "${pid}"; then
+            return 0
+        else
+            # Process is not running but pidfile exists - clean it up
+            rm -f "${NGINX_PID}"
+        fi    
+    fi
+
+    return 1
+}
+
+case $1 in
+start)
+    # run start command. exit 0 if success, exit 1 if failed
+    start_process
+    ;;
+stop)
+    # run stop command. exit 0 if success, exit 1 if failed
+    stop_process
+    ;;
+status)
+    # check application status command. exit 0 if running, exit 3 if not running
+    if status; then 
+        exit 0
+    else 
+        exit 3
+    fi
+    ;;
+*)
+    exit 1
+    ;;
+esac

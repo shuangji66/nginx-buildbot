@@ -1,0 +1,41 @@
+[
+  {
+    "stepTitle": "欢迎使用",
+    "items": [
+      {
+        "type": "radio",
+        "field": "nginx_version",
+        "label": "nginx版本",
+        "rules": [],
+        "options": [
+          {
+            "label": "1.28-稳定分支",
+            "value": "main"
+          },
+          {
+            "label": "1.29-主线分支，包含新特性和安全修复",
+            "value": "stable"
+          }
+        ],
+        "initValue": "main"
+      },
+      {
+        "type": "radio",
+        "field": "nginx_ui",
+        "label": "nginx-ui开关",
+        "rules": [],
+        "options": [
+          {
+            "label": "开启",
+            "value": "on"
+          },
+          {
+            "label": "关闭",
+            "value": "off"
+          }
+        ],
+        "initValue": "on"
+      }
+    ]
+  }
+]

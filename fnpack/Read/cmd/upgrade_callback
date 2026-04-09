@@ -1,0 +1,17 @@
+#!/bin/bash
+LOG_FILE="${TRIM_DATA_SHARE_PATHS%%:*}/logs/read.log"
+APP_DIR="${TRIM_DATA_SHARE_PATHS%%:*}"
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+}
+
+#---释放运行文件---
+cp -rf ${TRIM_APPDEST}/app_tmp/* "${APP_DIR}/"
+log_msg "成功释放运行文件"
+#---删除内置库---
+rm -rf ${TRIM_APPDEST}/app_tmp
+log_msg "成功删除内置库"
+log_msg "完成部署"
+
+exit 0

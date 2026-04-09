@@ -1,0 +1,235 @@
+[
+  {
+    "stepTitle": "基本设置",
+    "items": [
+      {
+        "type": "radio",
+        "field": "run_mode",
+        "label": "内存模式",
+        "rules": [],
+        "options": [
+          {
+            "label": "低内存模式 - 适合单用户",
+            "value": "low"
+          },
+          {
+            "label": "高内存模式 - 适合多用户",
+            "value": "high"
+          }
+        ],
+        "initValue": "low"
+      },
+      {
+        "type": "text",
+        "field": "admin_username",
+        "label": "管理员用户名",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": ""
+      },
+      {
+        "type": "password",
+        "field": "admin_password",
+        "label": "管理员密码",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": ""
+      },
+      {
+        "type": "password",
+        "field": "admin_code",
+        "label": "密钥",
+        "rules": [],
+        "options": [],
+        "initValue": "",
+        "helpText": "管理后台生成和获取注册码的密钥"
+      },
+      {
+        "type": "switch",
+        "field": "book_update",
+        "label": "定时更新",
+        "rules": [],
+        "options": [],
+        "initValue": "false",
+        "helpText": "是否开启定时更新最新章节的任务，共享后端请勿开启"
+      },
+      {
+        "type": "text",
+        "field": "ui_port",
+        "label": "web端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "8396"
+      },
+      {
+        "type": "text",
+        "field": "gg_tips",
+        "label": "公告内容",
+        "rules": [],
+        "options": [],
+        "initValue": "",
+        "helpText": "填写公告后每次开启时都会弹出"
+      }
+    ]
+  },
+  {
+    "stepTitle": "高级设置",
+    "items": [
+      {
+        "type": "switch",
+        "field": "proxypng",
+        "label": "封面代理模式",
+        "rules": [],
+        "options": [],
+        "initValue": "false"
+      },
+      {
+        "type": "text",
+        "field": "proxy_ip",
+        "label": "代理服务器IP",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "127.0.0.1"
+      },
+      {
+        "type": "text",
+        "field": "proxy_port",
+        "label": "代理服务器端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "7890"
+      },
+      {
+        "type": "switch",
+        "field": "allow_change",
+        "label": "用户修改权限",
+        "rules": [],
+        "options": [],
+        "initValue": "false",
+        "helpText": "是否允许自助修改权限"
+      },
+      {
+        "type": "switch",
+        "field": "allow_uptxt",
+        "label": "用户上传TXT权限",
+        "rules": [],
+        "options": [],
+        "initValue": "true",
+        "helpText": "是否允许上传txt"
+      },
+      {
+        "type": "switch",
+        "field": "allow_img",
+        "label": "图片解密",
+        "rules": [],
+        "options": [],
+        "initValue": "true",
+        "helpText": "是否使用图片解密"
+      },
+      {
+        "type": "switch",
+        "field": "allow_check",
+        "label": "检验书源",
+        "rules": [],
+        "options": [],
+        "initValue": "true",
+        "helpText": "是否允许检验书源"
+      },
+      {
+        "type": "radio",
+        "field": "source",
+        "label": "用户书源权限",
+        "rules": [],
+        "options": [
+          {
+            "label": "不允许修改",
+            "value": "0"
+          },
+          {
+            "label": "允许修改后台书源",
+            "value": "1"
+          },
+          {
+            "label": "独立书源",
+            "value": "2"
+          }
+        ],
+        "initValue": "0"
+      },
+      {
+        "type": "text",
+        "field": "max_source",
+        "label": "最大书源数量",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "0",
+        "helpText": "最大书源数量 0为不限制"
+      },
+      {
+        "type": "text",
+        "field": "timeout",
+        "label": "禁用书源",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "0",
+        "helpText": "10分钟内触发多少次timeout禁用书源 0 为不限制"
+      },
+      {
+        "type": "radio",
+        "field": "web_mode",
+        "label": "web模式",
+        "rules": [],
+        "options": [
+          {
+            "label": "提供web",
+            "value": "0"
+          },
+          {
+            "label": "只允许注册找回密码",
+            "value": "1"
+          },
+          {
+            "label": "关闭web",
+            "value": "2"
+          }
+        ],
+        "initValue": "0"
+      }
+    ]
+  }
+]

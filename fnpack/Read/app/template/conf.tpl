@@ -1,0 +1,42 @@
+solon.dataSources:
+  db:
+    class: "com.zaxxer.hikari.HikariDataSource"
+    driverClassName: org.sqlite.JDBC
+    jdbcUrl: jdbc:sqlite:read.db
+    maxPoolSize: 1
+admin:
+  gonggao: "${GG_TIPS}"  #填写公告后 app 每次开启时都会弹出
+  username: "${ADMIN_USERNAME}"
+  password: "${ADMIN_PASSWORD}"
+  update: ${BOOK_UPDATE} #是否开启定时更新最新章节的任务，共享后端请勿开启
+  code: "${ADMIN_CODE}" #需要填写app管理后台生成的密钥
+user:
+  allowchange: ${ALLOW_CHANGE}  #是否允许自助修改权限 允许 true 不允许 false
+  allowuptxt: ${ALLOW_UPTXT}  #是否允许上传txt 允许 true 不允许 false
+  allowimg: ${ALLOW_IMG}  #是否使用图片解密 允许 true 不允许 false
+  allowcheck: ${ALLOW_CHECK}  #是否允许检验书源 允许 true 不允许 false
+  source: ${SOURCE}  #0为不允许修改书源，1为允许修改后台书源，2独立书源
+  maxsource: ${MAX_SOURCE}  # 最大书源数量 0为不限制
+  timeout: ${TIMEOUT} #10分钟内触发多少次timeout禁用书源 0 为不限制
+  proxypng: ${PROXYPNG}  #是否代理封面
+  index: ${WEB_MODE}  # 0 提供 web 界面，1 web 只允许注册找回密码 2 关闭 web 界面
+smtp:
+  host:  #smtp邮箱host
+  protocols: TLSv1.2 #通讯协议
+  port:  #端口
+  account:  #邮箱账号
+  password:  #邮箱密码，部分邮箱是安全码
+  personal:  #发送人的昵称
+  codesubject: 验证码 #验证码邮件的主题
+  codetext: 您的验证码是$code,当前验证码十分钟有效请尽快使用  #验证码邮件的内容，必须有$code，发送邮件时会把$code替换成验证码
+default:
+  tts: #默认tts链接
+  rule: #默认净化链接
+server.http:
+  coreThreads: x5 #默认线程
+  maxThreads: x10  #最大线程
+# 如果不想日志输出到文件请把下面配置去除注解
+solon.logging:
+  appender:
+    file:
+      enable: false

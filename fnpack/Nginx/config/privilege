@@ -1,0 +1,7 @@
+{
+  "username": "Nginx",
+  "groupname": "Nginx",
+  "defaults": {
+    "run-as": "package"
+  }
+}

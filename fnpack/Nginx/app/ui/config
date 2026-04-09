@@ -1,0 +1,18 @@
+{
+  ".url": {
+    "Nginx.Application": {
+      "noDisplay": false,
+      "allUsers": true,
+      "fileTypes": [],
+      "control": {
+        "accessPerm": "readonly"
+      },
+      "protocol": "http",
+      "title": "Nginx",
+      "icon": "images/icon_{0}.png",
+      "type": "iframe",
+      "port": "9000",
+      "url": ""
+    }
+  }
+}

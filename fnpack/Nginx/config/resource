@@ -1,0 +1,38 @@
+{
+  "data-share": {
+    "shares": [
+      {
+        "name": "Nginx",
+        "permission": {
+          "rw": [
+            "Nginx"
+          ]
+        }
+      },
+      {
+        "name": "Nginx/etc",
+        "permission": {
+          "rw": [
+            "Nginx"
+          ]
+        }
+      },
+      {
+        "name": "Nginx/logs",
+        "permission": {
+          "rw": [
+            "Nginx"
+          ]
+        }
+      },
+      {
+        "name": "Nginx/nginx",
+        "permission": {
+          "rw": [
+            "Nginx"
+          ]
+        }
+      }
+    ]
+  }
+}

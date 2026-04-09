@@ -1,0 +1,18 @@
+{
+  ".url": {
+    "Read.Application": {
+      "noDisplay": false,
+      "allUsers": true,
+      "fileTypes": [],
+      "control": {
+        "accessPerm": "readonly"
+      },
+      "title": "轻阅读",
+      "icon": "images/icon_{0}.png",
+      "type": "url",
+      "protocol": "http",
+      "port": "${ui_port}",
+      "url": ""
+    }
+  }
+}
