@@ -161,8 +161,8 @@ jobs:
         run: |
           APP_DIR="build_workspace/${{ steps.set_vars.outputs.app_name }}/app"
           mkdir -p "$APP_DIR/server/main" "$APP_DIR/server/stable"
-          cp nginx-main "$APP_DIR/server/main/"
-          cp nginx-stable "$APP_DIR/server/stable/"
+          cp nginx-main "$APP_DIR/server/main/nginx"
+          cp nginx-stable "$APP_DIR/server/stable/nginx"
           cp nginx-ui "$APP_DIR/server/"
           echo "复制完成，app/server 目录结构："
           ls -la "$APP_DIR/server"
