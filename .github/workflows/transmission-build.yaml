@@ -1,4 +1,4 @@
-name: Build Transmission-debian12
+name: Build Transmission
 
 on:
   workflow_dispatch:
@@ -7,47 +7,41 @@ jobs:
   build:
     strategy:
       matrix:
-        arch: [ubuntu-24.04, ubuntu-24.04-arm]
-    runs-on: ${{ matrix.arch }}
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
     container:
       image: debian:bookworm
     steps:
-      - name: Install build dependencies
+      - name: Install dependencies
         run: |
-          apt update && apt install -y \
+          apt update
+          apt install -y \
             build-essential \
             cmake \
-            pkg-config \
             libssl-dev \
+            pkg-config \
             libcurl4-openssl-dev \
-            libevent-dev \
-            libbrotli-dev \
-            libnghttp2-dev \
             zlib1g-dev \
             gettext \
-            xz-utils \
-            wget
+            wget \
+            xz-utils
 
       - name: Download source
-        run: |
-          wget https://github.com/transmission/transmission/releases/download/4.1.1/transmission-4.1.1.tar.xz
-          tar xf transmission-4.1.1.tar.xz
-          cd transmission-4.1.1
+        run: wget https://github.com/transmission/transmission/releases/download/4.1.1/transmission-4.1.1.tar.xz
+
+      - name: Extract source
+        run: tar xf transmission-4.1.1.tar.xz
 
       - name: Configure CMake
         working-directory: transmission-4.1.1
         run: |
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/usr/local \
+            -DCMAKE_INSTALL_PREFIX=/var/apps/Transmission/target \
             -DENABLE_GTK=OFF \
             -DENABLE_QT=OFF \
             -DENABLE_MAC=OFF \
-            -DENABLE_DAEMON=ON \
-            -DENABLE_UTILS=ON \
-            -DENABLE_CLI=ON \
-            -DENABLE_NLS=OFF \
-            -DENABLE_TESTS=OFF \
             -DWITH_CRYPTO=openssl \
             -DUSE_SYSTEM_EVENT2=OFF \
             -DUSE_SYSTEM_DEFLATE=OFF \
@@ -65,7 +59,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v7
         with:
-          name: transmission-bin-${{ matrix.arch }}
+          name: transmission-bin-${{ matrix.os }}
           path: |
             transmission-4.1.1/build/daemon/transmission-daemon
             transmission-4.1.1/build/utils/transmission*
