@@ -46,7 +46,8 @@ jobs:
             -DUSE_SYSTEM_NATPMP=OFF \
             -DUSE_SYSTEM_UTP=OFF \
             -DUSE_SYSTEM_B64=OFF \
-            -DUSE_SYSTEM_PSL=OFF
+            -DUSE_SYSTEM_PSL=OFF \
+            -DRUN_CLANG_TIDY=OFF
 
       - name: Build
         working-directory: transmission-4.1.1
