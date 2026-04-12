@@ -52,12 +52,10 @@ jobs:
         working-directory: transmission-4.1.1
         run: cmake --build build --parallel $(nproc)
 
-      - name: Install
-        working-directory: transmission-4.1.1
-        run: cmake --install build
-
-      - name: Upload bin artifact
-        uses: actions/upload-artifact@v7
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
         with:
           name: transmission-bin-${{ matrix.os }}
-          path: /var/apps/Transmission/target/bin
+          path: |
+            transmission-4.1.1/build/daemon/transmission-daemon
+            transmission-4.1.1/build/utils/transmission*
