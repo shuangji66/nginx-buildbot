@@ -1,0 +1,17 @@
+{
+  ".url": {
+    "Aria2.Application": {
+      "noDisplay": false,
+      "allUsers": true,
+      "fileTypes": [],
+      "control": {
+        "accessPerm": "readonly"
+      },
+      "protocol": "http",
+      "title": "Aria2",
+      "icon": "images/icon_{0}.png",
+      "type": "iframe",
+      "url": "/cgi/ThirdParty/Aria2/index.cgi/"
+    }
+  }
+}

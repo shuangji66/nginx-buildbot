@@ -1,0 +1,30 @@
+{
+  "data-share": {
+    "shares": [
+      {
+        "name": "Aria2",
+        "permission": {
+          "rw": [
+            "Aria2"
+          ]
+        }
+      },
+      {
+        "name": "Aria2/data",
+        "permission": {
+          "rw": [
+            "Aria2"
+          ]
+        }
+      },
+      {
+        "name": "Aria2/Download",
+        "permission": {
+          "rw": [
+            "Aria2"
+          ]
+        }
+      }
+    ]
+  }
+}
