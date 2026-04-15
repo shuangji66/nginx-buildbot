@@ -20,7 +20,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
-            build-essential git cmake curl pkg-config \
+            build-essential git cmake curl pkg-config gettext \
             libssl-dev libdvbcsa-dev libavahi-client-dev libsqlite3-dev \
             libusb-1.0-0-dev zlib1g-dev wget python3 python3-pip
           ln -sf /usr/bin/python3 /usr/bin/python
