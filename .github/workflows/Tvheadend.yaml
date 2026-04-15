@@ -33,7 +33,7 @@ jobs:
           if [ "${{ matrix.arch }}" = "amd64" ]; then
             ARCH="x86_64"
           else
-            ARCH="arm64"
+            ARCH="aarch64"
           fi
           ./configure --arch=$ARCH --prefix=/var/apps/Tvheadend/target
           make -j$(nproc)
