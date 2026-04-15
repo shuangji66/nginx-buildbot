@@ -1,0 +1,43 @@
+name: Build Tvheadend
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    container:
+      image: debian:bookworm
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential git cmake curl pkg-config \
+            libssl-dev libdvbcsa-dev libavahi-client-dev libsqlite3-dev \
+            libusb-1.0-0-dev zlib1g-dev wget python3 python3-pip
+          ln -sf /usr/bin/python3 /usr/bin/python
+
+      - name: Build and install Tvheadend
+        run: |
+          git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend
+          cd /tmp/tvheadend
+          ./configure --prefix=/var/apps/Tvheadend/target
+          make -j$(nproc)
+          make install
+
+      - name: Package artifact
+        run: tar -czf tvheadend-${{ matrix.arch }}.tar.gz -C /var/apps Tvheadend
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: tvheadend-${{ matrix.arch }}
+          path: tvheadend-${{ matrix.arch }}.tar.gz
