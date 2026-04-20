@@ -12,5 +12,5 @@ ctl_stop=true
 desktop_uidir=ui
 desktop_applaunchname=Filebrowser.Application
 checkport=false
-disable_authorization_path=false
+disable_authorization_path=true
 changelog=${CHANGELOG}
