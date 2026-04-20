@@ -1,6 +1,6 @@
 [
   {
-    "stepTitle": "运行设置",
+    "stepTitle": "🧱基础设置",
     "items": [
       {
         "type": "radio",
@@ -17,25 +17,12 @@
             "value": "web"
           },
           {
-            "label": "rpc远程控制-实验性质",
+            "label": "rpc远程控制-高级功能",
             "value": "rpc"
           }
         ],
-        "helpText": "推荐先在web控制台设置好后导出toml配置，再以配置模式运行",
+        "helpText": "普通用户推荐web控制台运行；小内存设备可设置好后导出toml配置，再以配置模式运行",
         "initValue": "web"
-      },
-      {
-        "type": "text",
-        "field": "ui_port",
-        "label": "web控制台ui端口和api端口",
-        "rules": [
-          {
-            "required": true,
-            "message": "请输入内容"
-          }
-        ],
-        "options": [],
-        "initValue": "11211"
       },
       {
         "type": "text",
@@ -48,6 +35,7 @@
           }
         ],
         "options": [],
+        "helpText": "web控制台以此用户名管理easytier-core并下发配置",
         "initValue": ""
       },
       {
@@ -67,7 +55,7 @@
       {
         "type": "password",
         "field": "config_secret",
-        "label": "default配置文件密钥",
+        "label": "default配置文件组网密钥",
         "rules": [
           {
             "required": true,
@@ -94,7 +82,7 @@
     ]
   },
   {
-    "stepTitle": "通用设置",
+    "stepTitle": "📓日志设置",
     "items": [
       {
         "type": "select",
@@ -123,7 +111,7 @@
             "value": "error"
           }
         ],
-        "helpText": "默认info，等级越低，日志量越详细，trace等级最低",
+        "helpText": "默认info，等级越低，日志越详细写入量越大，trace等级最低",
         "initValue": "info"
       },
       {
@@ -151,26 +139,114 @@
           }
         ],
         "options": [],
-        "helpText": "超过数量程序自动清理旧日志",
+        "helpText": "超过数量程序自动覆盖旧日志",
         "initValue": "10"
+      }
+    ]
+  },
+  {
+    "stepTitle": "⭐高级自定义",
+    "items": [
+      {
+        "type": "tips",
+        "field": "wizard_default",
+        "label": "示例项",
+        "rules": [],
+        "options": [],
+        "helpText": "💡普通用户可无视自定义设置，自定义修改前确保已多次浏览官方使用文档💡"
       },
       {
-        "type": "radio",
+        "type": "text",
+        "field": "ui_port",
+        "label": "web前后端端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "11211"
+      },
+      {
+        "type": "select",
+        "field": "api_host_mode",
+        "label": "添加web控制台默认api后端",
+        "rules": [],
+        "options": [
+          {
+            "label": "开启",
+            "value": "true"
+          },
+          {
+            "label": "关闭",
+            "value": "false"
+          }
+        ],
+        "helpText": "开启后可为web控制台添加默认api后端，默认关闭",
+        "initValue": "false"
+      },
+      {
+        "type": "text",
+        "field": "api_host",
+        "label": "web控制台默认api后端",
+        "rules": [],
+        "options": [],
+        "helpText": "可添加ip地址或反代域名地址",
+        "initValue": "http://192.168.x.x:11211"
+      },
+      {
+        "type": "text",
+        "field": "api_port",
+        "label": "api配置下发端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "22020"
+      },
+      {
+        "type": "select",
+        "field": "api_protocol",
+        "label": "api连接协议",
+        "rules": [],
+        "options": [
+          {
+            "label": "TCP",
+            "value": "tcp"
+          },
+          {
+            "label": "UDP",
+            "value": "udp"
+          },
+          {
+            "label": "WS",
+            "value": "ws"
+          }
+        ],
+        "helpText": "ws协议可被反向代理，tls安全反代后可被其他节点以wss链接，充当自建公共web控制台",
+        "initValue": "udp"
+      },
+      {
+        "type": "select",
         "field": "rpc_mode",
         "label": "RPC远程控制",
         "rules": [],
         "options": [
           {
-            "label": "关",
-            "value": "off"
+            "label": "开启",
+            "value": "true"
           },
           {
-            "label": "开",
-            "value": "on"
+            "label": "关闭",
+            "value": "false"
           }
         ],
-        "helpText": "此选项仅为配置模式RPC远程控制，不影响RPC远程模式",
-        "initValue": "off"
+        "helpText": "此选项仅为配置模式RPC远程控制，不影响RPC远程模式，默认关闭",
+        "initValue": "false"
       },
       {
         "type": "tips",
@@ -195,21 +271,22 @@
         "initValue": "0.0.0.0:15888"
       },
       {
-        "type": "radio",
+        "type": "select",
         "field": "rpc_whitelist_mode",
         "label": "RPC白名单开关",
         "rules": [],
         "options": [
           {
-            "label": "关",
-            "value": "off"
+            "label": "开启",
+            "value": "true"
           },
           {
-            "label": "开",
-            "value": "on"
+            "label": "关闭",
+            "value": "false"
           }
         ],
-        "initValue": "off"
+        "helpText": "默认关闭",
+        "initValue": "false"
       },
       {
         "type": "text",
@@ -223,7 +300,7 @@
         ],
         "options": [],
         "helpText": "根据实际填写",
-        "initValue": "192.168.0.0/16,10.0.0.0/8,127.0.0.1/32,::1/128"
+        "initValue": "127.0.0.1/32,127.0.0.0/8,::1/128"
       }
     ]
   }
