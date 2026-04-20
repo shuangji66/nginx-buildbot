@@ -13,5 +13,5 @@ install_dep_apps=nodejs_v24
 desktop_uidir=ui
 desktop_applaunchname=CloudSaver.Application
 checkport=false
-disable_authorization_path=false
+disable_authorization_path=true
 changelog=${CHANGELOG}
