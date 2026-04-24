@@ -1,0 +1,16 @@
+appname=Komga
+version=${VERSION}
+display_name=Komga
+desc="""<p>📘为您的漫画、漫画、BD、杂志和电子书提供媒体服务器。</p><p>官方版本不支持mobi格式！！</p><p>软件root运行，创建库时可自由存放，推荐路径“/vol1/@appshare/Komga/book”</p><p>软件依赖Java21环境，优先调用java-21-openj9</p>"""
+platform=all
+source=thirdparty
+maintainer=gotson
+maintainer_url=https://github.com/gotson/komga
+distributor=shuangji66
+distributor_url=https://github.com/shuangji66/FnDepot
+ctl_stop=true
+desktop_uidir=ui
+desktop_applaunchname=Komga.Application
+checkport=false
+disable_authorization_path=false
+changelog=${CHANGELOG}

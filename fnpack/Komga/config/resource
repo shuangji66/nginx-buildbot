@@ -1,0 +1,30 @@
+{
+  "data-share": {
+    "shares": [
+      {
+        "name": "Komga",
+        "permission": {
+          "rw": [
+            "Komga"
+          ]
+        }
+      },
+      {
+        "name": "Komga/book",
+        "permission": {
+          "rw": [
+            "Komga"
+          ]
+        }
+      },
+      {
+        "name": "Komga/data",
+        "permission": {
+          "rw": [
+            "Komga"
+          ]
+        }
+      }
+    ]
+  }
+}
