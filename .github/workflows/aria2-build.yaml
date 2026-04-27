@@ -56,9 +56,10 @@ jobs:
                 --with-openssl \
                 --without-gnutls \
                 --without-libcurl &&
-              make -j\$(nproc) &&
-              make strip install &&
-              cp /var/apps/Aria2/target/server/aria2c /output/
+              && make -j\$(nproc) \
+              && make install \
+              && strip /var/apps/Aria2/target/server/aria2c \
+              && cp /var/apps/Aria2/target/server/aria2c /output/
             "
 
       - name: Upload artifact
