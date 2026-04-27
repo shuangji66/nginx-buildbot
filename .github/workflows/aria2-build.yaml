@@ -1,0 +1,76 @@
+name: Build aria2 static
+
+on:
+  workflow_dispatch:
+
+env:
+  ARIA2_VERSION: 1.37.0
+  ARIA2_URL: https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0.tar.gz
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            arch: x86_64
+          - os: ubuntu-22.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            gettext \
+            gcc \
+            g++ \
+            make \
+            libsqlite3-dev \
+            libxml2-dev \
+            libssh2-1-dev \
+            libc-ares-dev \
+            zlib1g-dev \
+            libssl-dev
+
+      - name: Download aria2 source
+        run: |
+          wget "$ARIA2_URL" -O "aria2-${ARIA2_VERSION}.tar.gz"
+          tar xzf "aria2-${ARIA2_VERSION}.tar.gz"
+
+      - name: Build aria2 (static)
+        run: |
+          cd "aria2-${ARIA2_VERSION}"
+          autoreconf -i
+          ./configure ARIA2_STATIC=yes \
+            --prefix=/var/apps/Aria2/target/server \
+            --with-sqlite3 \
+            --with-libxml2 \
+            --with-libssh2 \
+            --with-libcares \
+            --with-zlib \
+            --with-openssl \
+            --without-gnutls \
+            --without-libcurl
+          make -j$(nproc)
+
+      - name: Gather aria2c binary
+        run: |
+          mkdir -p output
+          cp "aria2-${ARIA2_VERSION}/src/aria2c" output/
+          echo "Built binary:"
+          file output/aria2c
+          # Check linkage (should be mostly static)
+          ldd output/aria2c || true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: aria2c-${{ matrix.os }}-${{ matrix.arch }}
+          path: output/aria2c
