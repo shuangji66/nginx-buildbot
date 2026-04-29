@@ -24,7 +24,7 @@ start_process() {
     log_msg "nginx已启动"
     # 启动nginx-ui
     if [ "$nginx_ui" = "on" ]; then
-        nohup ${TRIM_APPDEST}/server/nginx-ui -config ${TRIM_PKGVAR}/nginx-ui/app.ini 2>&1 &
+        nohup ${TRIM_APPDEST}/server/nginx-ui -config ${TRIM_DATA_SHARE_PATHS%%:*}/nginx-ui/app.ini 2>&1 &
         printf "%s" "$!" > ${NGINX_UI_PID}
         log_msg "nginx-ui已开启"
     else
