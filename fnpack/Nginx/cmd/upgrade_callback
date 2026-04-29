@@ -1,5 +1,7 @@
 #!/bin/bash
-
-### This script is called after the user upgrades the application.
+if [ -d "${TRIM_PKGVAR}/nginx-ui" ]; then
+    rsync -av --delete "${TRIM_PKGVAR}/nginx-ui/" "${TRIM_DATA_SHARE_PATHS%%:*}/nginx-ui/"
+    rm -rf "${TRIM_PKGVAR}/nginx-ui"
+fi
 
 exit 0
