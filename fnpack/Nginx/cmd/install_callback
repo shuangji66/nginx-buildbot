@@ -4,10 +4,9 @@ APP_DIR="${TRIM_DATA_SHARE_PATHS%%:*}"
 # 创建目录结构释放文件
 mkdir ${TRIM_PKGVAR}/logs
 mkdir ${TRIM_PKGVAR}/cache
-mkdir ${TRIM_PKGVAR}/nginx-ui
 cp -rf ${TRIM_APPDEST}/etc/* ${APP_DIR}/etc/
 cp -rf ${TRIM_APPDEST}/html ${APP_DIR}/nginx/
-cp ${TRIM_APPDEST}/server/app.ini ${TRIM_PKGVAR}/nginx-ui/app.ini
+cp ${TRIM_APPDEST}/server/app.ini ${APP_DIR}/nginx-ui/app.ini
 mkdir ${APP_DIR}/etc/sites-available
 mkdir ${APP_DIR}/etc/sites-enabled
 mkdir ${APP_DIR}/etc/streams-available
