@@ -32,6 +32,14 @@
             "Nginx"
           ]
         }
+      },
+      {
+        "name": "Nginx/nginx-ui",
+        "permission": {
+          "rw": [
+            "Nginx"
+          ]
+        }
       }
     ]
   }
