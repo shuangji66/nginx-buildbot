@@ -3,7 +3,7 @@
 FB_ADMIN="$fb_admin"
 FB_PASSWORD="$fb_password"
 FB_PORT="$fb_port"
-FB_ROOT="$fb_root"
+FB_ROOT="."
 LOG_FILE="${TRIM_PKGVAR}/info.log"
 DB_FILE="${TRIM_PKGHOME}/filebrowser.db"
 
