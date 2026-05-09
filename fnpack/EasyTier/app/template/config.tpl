@@ -12,9 +12,5 @@ listeners = [
 network_name = "${CONFIG_NAME}"
 network_secret = "${CONFIG_SECRET}"
 
-#官方节点经常炸，可以换其他节点并去掉注释使用，或者空着作为独立节点使用
-##[[peer]]
-##uri = "${PEER_URL}"
-
-##[[peer]]
-##uri = ""
+[[peer]]
+uri = "${PEER_URL}"
