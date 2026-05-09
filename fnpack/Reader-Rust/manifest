@@ -1,0 +1,16 @@
+appname=Reader-Rust
+version=${VERSION}
+display_name=Reader-Rust
+desc="""<p>📚基于reader重构的 Rust 版书源阅读服务端，支持自定义书源、多格式解析。</p><p>基于docker镜像文件重新打包，喜欢本项目可以支持一下原开发者。源项目暂未开放本地书籍导入</p>"""
+platform=${PLATFORM}
+source=thirdparty
+maintainer=givenge
+maintainer_url=https://github.com/givenge/reader-rust
+distributor=shuangji66
+distributor_url=https://github.com/shuangji66/FnDepot
+ctl_stop=true
+desktop_uidir=ui
+desktop_applaunchname=Reader-Rust.Application
+checkport=true
+disable_authorization_path=false
+changelog=${CHANGELOG}

@@ -1,0 +1,194 @@
+[
+  {
+    "stepTitle": "欢迎使用",
+    "items": [
+      {
+        "type": "tips",
+        "field": "",
+        "label": "",
+        "rules": [],
+        "options": [],
+        "helpText": "基础设置"
+      },
+      {
+        "type": "text",
+        "field": "ui_port",
+        "label": "UI端口",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "initValue": "4786"
+      },
+      {
+        "type": "select",
+        "field": "secure_mode",
+        "label": "鉴权模式",
+        "rules": [],
+        "options": [
+          {
+            "label": "开",
+            "value": "true"
+          },
+          {
+            "label": "关",
+            "value": "false"
+          }
+        ],
+        "helpText": "开启鉴权模式需注册用户使用",
+        "initValue": "true"
+      },
+      {
+        "type": "password",
+        "field": "secure_key",
+        "label": "管理员密码",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "helpText": "鉴权模式使用管理员密码进行用户管理",
+        "initValue": ""
+      },
+      {
+        "type": "tips",
+        "field": "",
+        "label": "",
+        "rules": [],
+        "options": [],
+        "helpText": "高级设置"
+      },
+      {
+        "type": "text",
+        "field": "ui_addr",
+        "label": "监听地址",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "helpText": "默认即可，按需设置",
+        "initValue": "0.0.0.0"
+      },
+      {
+        "type": "select",
+        "field": "proxy_switch",
+        "label": "代理开关",
+        "rules": [],
+        "options": [
+          {
+            "label": "关",
+            "value": "off"
+          },
+          {
+            "label": "开",
+            "value": "on"
+          }
+        ],
+        "helpText": "开启后可通过代理更新书源、运行文件",
+        "initValue": "off"
+      },
+      {
+        "type": "text",
+        "field": "https_proxy",
+        "label": "代理地址",
+        "rules": [],
+        "options": [],
+        "initValue": "http://127.0.0.1:7890"
+      },
+      {
+        "type": "select",
+        "field": "invite_mode",
+        "label": "邀请码开关",
+        "rules": [],
+        "options": [
+          {
+            "label": "开",
+            "value": "on"
+          },
+          {
+            "label": "关",
+            "value": "off"
+          }
+        ],
+        "helpText": "开启鉴权模式后生效",
+        "initValue": "off"
+      },
+      {
+        "type": "text",
+        "field": "invite_code",
+        "label": "邀请码",
+        "rules": [],
+        "options": [],
+        "helpText": "开启鉴权模式后生效",
+        "initValue": ""
+      },
+      {
+        "type": "text",
+        "field": "user_limit",
+        "label": "注册用户数上限",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "helpText": "开启鉴权模式后生效",
+        "initValue": "50"
+      },
+      {
+        "type": "text",
+        "field": "book_limit",
+        "label": "用户书籍数上限",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入内容"
+          }
+        ],
+        "options": [],
+        "helpText": "开启鉴权模式后生效",
+        "initValue": "2000"
+      },
+      {
+        "type": "select",
+        "field": "log_level",
+        "label": "日志等级",
+        "rules": [],
+        "options": [
+          {
+            "label": "trace",
+            "value": "trace"
+          },
+          {
+            "label": "debug",
+            "value": "debug",
+            "_undefined": true
+          },
+          {
+            "label": "info",
+            "value": "info"
+          },
+          {
+            "label": "warn",
+            "value": "warn"
+          },
+          {
+            "label": "error",
+            "value": "error"
+          }
+        ],
+        "helpText": "默认即可",
+        "initValue": "info"
+      }
+    ]
+  }
+]

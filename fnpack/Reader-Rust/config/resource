@@ -1,0 +1,22 @@
+{
+  "data-share": {
+    "shares": [
+      {
+        "name": "Reader-Rust",
+        "permission": {
+          "rw": [
+            "Reader-Rust"
+          ]
+        }
+      },
+      {
+        "name": "Reader-Rust/storage",
+        "permission": {
+          "rw": [
+            "Reader-Rust"
+          ]
+        }
+      }
+    ]
+  }
+}
