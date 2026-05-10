@@ -39,7 +39,7 @@ jobs:
               apt-get update &&
               apt-get install -y \
                 autoconf automake autopoint libtool pkg-config gettext \
-                gcc g++ make \
+                build-essential gcc g++ make \
                 libsqlite3-dev libxml2-dev libssh2-1-dev \
                 libc-ares-dev zlib1g-dev libssl-dev \
                 liblzma-dev libgpg-error-dev &&
