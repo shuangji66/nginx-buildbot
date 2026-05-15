@@ -1,0 +1,20 @@
+{
+  ".url": {
+    "MoveCar.Application": {
+      "noDisplay": false,
+      "allUsers": false,
+      "fileTypes": [],
+      "control": {
+        "accessPerm": "editable"
+      },
+      "protocol": "http",
+      "gatewayPrefix": "",
+      "gatewaySocket": "",
+      "title": "智能挪车系统",
+      "icon": "images/icon_{0}.png",
+      "type": "iframe",
+      "port": "${ui_port}",
+      "url": "/admin"
+    }
+  }
+}
